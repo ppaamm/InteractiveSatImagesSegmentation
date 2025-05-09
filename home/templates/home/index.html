@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{%  load static %}
+
+{% block extra_css %}
+        <link rel= "stylesheet" href="{% static 'home/style.css'%}">
+{% endblock %}
+
+{% block content %}
+
+<div class="box">
+    <div class="title-container">
+        <div class = "title">Demonstration: Interactive Image Segmentation</div>
+    </div>
+    <h2 style="text-align: center;">Research group on Human-Centric Machine Learning</h2>
+
+    <div class="main-text">
+    <div class="summary" >
+        <p class="centered-text">This application is a demonstration of the work
+        done in the research group on <b>Human-Centric Machine Learning</b>. It is based
+        on <b>Paulina Vennemann</b>'s Master's thesis.</p>
+    </div>
+    
+    
+    <div class="button-container">
+        <form action="home:index" method="get" style="margin-bottom: 10px;">
+                {% csrf_token %}
+            <button type="submit">Start the demo!</button>
+        </form>
+    </div>
+
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+{% endblock script %}
