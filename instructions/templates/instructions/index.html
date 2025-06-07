@@ -42,12 +42,12 @@
 <script>
     const content = document.getElementById("content");
 
-    function slideAndFollow(linkId, direction) {
+    function fadeAndFollow(linkId) {
         const button = document.getElementById(linkId);
         if (button) {
             button.addEventListener("click", function (e) {
                 e.preventDefault();
-                content.classList.add(direction === 'left' ? 'slide-left' : 'slide-right');
+                content.classList.add("fade-out");
                 setTimeout(() => {
                     window.location.href = button.href;
                 }, 250);
@@ -72,9 +72,9 @@
         }
     });
 
-    slideAndFollow("next-button", "left");
-    slideAndFollow("prev-button", "right");
-    slideAndFollow("start-button", "left");
+    fadeAndFollow("next-button");
+    fadeAndFollow("prev-button");
+    fadeAndFollow("start-button");
 </script>
 {% endblock %}
 

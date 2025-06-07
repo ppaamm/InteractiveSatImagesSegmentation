@@ -8,13 +8,7 @@ body {
     transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
 }
 
-.slide-left {
-    transform: translateX(-100%);
-    opacity: 0;
-}
-
-.slide-right {
-    transform: translateX(100%);
+.fade-out {
     opacity: 0;
 }
 
