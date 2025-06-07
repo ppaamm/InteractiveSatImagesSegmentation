@@ -28,7 +28,7 @@
     
     
     <div class="button-container">
-        <form action="home:index" method="get" style="margin-bottom: 10px;">
+        <form action="{% url 'instructions:index' %}" method="get" style="margin-bottom: 10px;">
                 {% csrf_token %}
             <button type="submit">Start the demo!</button>
         </form>

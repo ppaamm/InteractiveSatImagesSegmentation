@@ -5,6 +5,10 @@ from django.template.loader import render_to_string
 
 TOTAL_STEPS = 3
 
+
+def index(request):
+    return redirect('instructions:instruction_step', step=1)
+
 def instruction_step(request, step):
 
     template = loader.get_template("instructions/index.html")
