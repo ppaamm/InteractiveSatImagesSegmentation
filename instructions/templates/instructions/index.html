@@ -10,7 +10,7 @@
         }
 
         .content-wrapper {
-            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
         }
 
         .slide-left {
@@ -42,7 +42,8 @@
         .nav-buttons {
             margin-top: 30px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* Center the buttons horizontally */
+            gap: 20px;               /* Add space between buttons */
         }
 
         a.button {
@@ -73,9 +74,11 @@
             {% else %}
                 <span></span>
             {% endif %}
-
+        
             {% if has_next %}
                 <a href="{% url 'instructions:instruction_step' next_step %}" class="button" id="next-button">Next →</a>
+            {% elif step == total_steps %}
+                <a href="{% url 'instructions:instruction_step' 1 %}" class="button" id="start-button">Start!</a>
             {% endif %}
         </div>
     </div>
@@ -91,10 +94,27 @@
                     content.classList.add(direction === 'left' ? 'slide-left' : 'slide-right');
                     setTimeout(() => {
                         window.location.href = button.href;
-                    }, 400);
+                    }, 250);
                 });
             }
         }
+        
+        document.addEventListener("keydown", function (e) {
+            const nextBtn = document.getElementById("next-button") || document.getElementById("start-button");
+            const prevBtn = document.getElementById("prev-button");
+    
+            if (e.key === "ArrowRight" || e.key === "Enter") {
+                if (nextBtn) {
+                    e.preventDefault();
+                    nextBtn.click();
+                }
+            } else if (e.key === "ArrowLeft") {
+                if (prevBtn) {
+                    e.preventDefault();
+                    prevBtn.click();
+                }
+            }
+        });
 
         slideAndFollow("next-button", "left");
         slideAndFollow("prev-button", "right");
