@@ -1,1 +1,103 @@
-<p>Hello world!</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Step {{ step }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            overflow-x: hidden;
+        }
+
+        .content-wrapper {
+            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+        }
+
+        .slide-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .slide-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            height: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: {{ progress_percent }}%;
+            transition: width 0.3s ease-in-out;
+        }
+
+        .nav-buttons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        a.button {
+            background: #008CBA;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        a.button:hover {
+            background: #005f75;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper" id="content">
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
+
+        <h2>Step {{ step }} of {{ total_steps }}</h2>
+        <p>{{ content }}</p>
+
+        <div class="nav-buttons">
+            {% if has_prev %}
+                <a href="{% url 'instructions:instruction_step' prev_step %}" class="button" id="prev-button">← Previous</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+
+            {% if has_next %}
+                <a href="{% url 'instructions:instruction_step' next_step %}" class="button" id="next-button">Next →</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const content = document.getElementById("content");
+
+        function slideAndFollow(linkId, direction) {
+            const button = document.getElementById(linkId);
+            if (button) {
+                button.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    content.classList.add(direction === 'left' ? 'slide-left' : 'slide-right');
+                    setTimeout(() => {
+                        window.location.href = button.href;
+                    }, 400);
+                });
+            }
+        }
+
+        slideAndFollow("next-button", "left");
+        slideAndFollow("prev-button", "right");
+    </script>
+</body>
+</html>
