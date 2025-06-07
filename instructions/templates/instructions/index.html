@@ -1,123 +1,80 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Step {{ step }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            overflow-x: hidden;
-        }
+{% extends 'base.html' %}
 
-        .content-wrapper {
-            transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
-        }
+{%  load static %}
 
-        .slide-left {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
+{% block extra_css %}
+      <link rel= "stylesheet" href="{% static 'instructions/style.css'%}">
+{% endblock %}
 
-        .slide-right {
-            transform: translateX(100%);
-            opacity: 0;
-        }
 
-        .progress-bar-container {
-            width: 100%;
-            background-color: #eee;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            height: 20px;
-        }
+{% block content %}
 
-        .progress-bar {
-            height: 100%;
-            background-color: #4CAF50;
-            width: {{ progress_percent }}%;
-            transition: width 0.3s ease-in-out;
-        }
-
-        .nav-buttons {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center; /* Center the buttons horizontally */
-            gap: 20px;               /* Add space between buttons */
-        }
-
-        a.button {
-            background: #008CBA;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        a.button:hover {
-            background: #005f75;
-        }
-    </style>
-</head>
-<body>
+<div class="box">
+    <div class="progress-bar-container">
+        <div class="progress-bar" style="width: {{ progress_percent }}%;"></div>
+    </div>
+    
     <div class="content-wrapper" id="content">
-        <div class="progress-bar-container">
-            <div class="progress-bar"></div>
-        </div>
-
-        <h2>Step {{ step }} of {{ total_steps }}</h2>
-        <p>{{ content }}</p>
-
-        <div class="nav-buttons">
-            {% if has_prev %}
-                <a href="{% url 'instructions:instruction_step' prev_step %}" class="button" id="prev-button">← Previous</a>
-            {% else %}
-                <span></span>
-            {% endif %}
-        
-            {% if has_next %}
-                <a href="{% url 'instructions:instruction_step' next_step %}" class="button" id="next-button">Next →</a>
-            {% elif step == total_steps %}
-                <a href="{% url 'instructions:instruction_step' 1 %}" class="button" id="start-button">Start!</a>
-            {% endif %}
+        <div class="step-content">
+            {{ content|safe }}
         </div>
     </div>
 
-    <script>
-        const content = document.getElementById("content");
+    <div class="nav-buttons">
+        {% if has_prev %}
+            <a href="{% url 'instructions:instruction_step' prev_step %}" class="button" id="prev-button">←</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+    
+        {% if has_next %}
+            <a href="{% url 'instructions:instruction_step' next_step %}" class="button" id="next-button">→</a>
+        {% elif step == total_steps %}
+            <a href="{% url 'instructions:instruction_step' 1 %}" class="button" id="start-button">Start!</a>
+        {% endif %}
+    </div>
+</div>
 
-        function slideAndFollow(linkId, direction) {
-            const button = document.getElementById(linkId);
-            if (button) {
-                button.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    content.classList.add(direction === 'left' ? 'slide-left' : 'slide-right');
-                    setTimeout(() => {
-                        window.location.href = button.href;
-                    }, 250);
-                });
+
+{% endblock %}
+
+{% block script %}
+<script>
+    const content = document.getElementById("content");
+
+    function slideAndFollow(linkId, direction) {
+        const button = document.getElementById(linkId);
+        if (button) {
+            button.addEventListener("click", function (e) {
+                e.preventDefault();
+                content.classList.add(direction === 'left' ? 'slide-left' : 'slide-right');
+                setTimeout(() => {
+                    window.location.href = button.href;
+                }, 250);
+            });
+        }
+    }
+
+    document.addEventListener("keydown", function (e) {
+        const nextBtn = document.getElementById("next-button") || document.getElementById("start-button");
+        const prevBtn = document.getElementById("prev-button");
+
+        if (e.key === "ArrowRight" || e.key === "Enter") {
+            if (nextBtn) {
+                e.preventDefault();
+                nextBtn.click();
+            }
+        } else if (e.key === "ArrowLeft") {
+            if (prevBtn) {
+                e.preventDefault();
+                prevBtn.click();
             }
         }
-        
-        document.addEventListener("keydown", function (e) {
-            const nextBtn = document.getElementById("next-button") || document.getElementById("start-button");
-            const prevBtn = document.getElementById("prev-button");
-    
-            if (e.key === "ArrowRight" || e.key === "Enter") {
-                if (nextBtn) {
-                    e.preventDefault();
-                    nextBtn.click();
-                }
-            } else if (e.key === "ArrowLeft") {
-                if (prevBtn) {
-                    e.preventDefault();
-                    prevBtn.click();
-                }
-            }
-        });
+    });
 
-        slideAndFollow("next-button", "left");
-        slideAndFollow("prev-button", "right");
-    </script>
-</body>
-</html>
+    slideAndFollow("next-button", "left");
+    slideAndFollow("prev-button", "right");
+    slideAndFollow("start-button", "left");
+</script>
+{% endblock %}
+
