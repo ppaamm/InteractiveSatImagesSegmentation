@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'experiment/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="box">
+    <div class="title-container">
+        <div class="title">Select an image</div>
+    </div>
+
+    <div class="main-text">
+        <div class="image-grid">
+            {% for label, filename in images.items %}
+                <div class="image-option">
+                    <p>{{ label }}</p>
+                    <form action="{% url 'experiment:index' %}" method="get">
+                        <input type="hidden" name="image" value="{{ filename }}">
+                        <button type="submit" style="border: none; padding: 0; background: none;">
+                            <img src="{{ MEDIA_URL }}satellite/{{ filename }}.jpg" alt="{{ label }}">
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

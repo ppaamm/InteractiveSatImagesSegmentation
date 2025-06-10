@@ -28,3 +28,40 @@
     left: 0;
     z-index: 2;
 }
+
+.image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.image-option {
+    text-align: center;
+    width: 300px;
+}
+
+.image-option p {
+    text-align: center;
+}
+
+.image-option button {
+    all: unset;
+    display: block;
+    width: 100%;
+}
+
+.image-option img {
+    width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+
+.image-option img:hover {
+    transform: scale(1.2);
+    z-index: 2;
+}
