@@ -30,7 +30,7 @@
         {% if has_next %}
             <a href="{% url 'instructions:instruction_step' next_step %}" class="button" id="next-button">→</a>
         {% elif step == total_steps %}
-            <a href="{% url 'experiment:index' %}" class="button" id="start-button">Start!</a>
+            <a href="{% url 'experiment:select' %}" class="button" id="start-button">Start!</a>
         {% endif %}
     </div>
 </div>
