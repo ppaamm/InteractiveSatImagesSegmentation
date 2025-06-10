@@ -1,0 +1,30 @@
+.image-display {
+    width: 80%;
+    max-width: 600px;
+    height: auto;
+}
+
+
+.image-overlay-container {
+    position: relative;
+    width: 80%;             /* or a fixed width */
+    max-width: 600px;
+}
+
+.image-overlay-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.background-image {
+    position: relative;
+    z-index: 1;
+}
+
+#overlay-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
