@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 from django.template import loader
 from django.conf import settings
+import os
+
 
 
 OPACITY = 0.5
@@ -19,7 +21,8 @@ def index(request):
     selected = request.GET.get('image', 'source-image')  # without extension
     image_url = settings.MEDIA_URL + f'satellite/{selected}.jpg'
     segmentation_url = settings.MEDIA_URL + f'satellite/{selected}.png'
-
+    #segmentation_path = settings.MEDIA_ROOT + f'/satellite/{selected}.pkl'
+    
     context = {
         'image_url': image_url,
         'background_image_url': image_url,
@@ -34,7 +37,12 @@ def index(request):
 
 def image_selection(request):
     template = loader.get_template("experiment/image_selection.html")
-    context = {'images': IMAGES, 
+    
+    existing_images = { img_name : IMAGES[img_name]
+                        for img_name in IMAGES 
+                        if os.path.isfile(settings.MEDIA_ROOT + f'/satellite/{IMAGES[img_name]}_data.pkl')}
+    
+    context = {'images': existing_images, 
                'MEDIA_URL': settings.MEDIA_URL, }
     return HttpResponse(template.render(context, request))
     
