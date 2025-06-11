@@ -5,6 +5,9 @@ import os
 import pickle
 
 
+path = "../media/satellite/"
+
+
 def extract_areas_from_segmentation(png_path):
     # Load the image and convert to RGB
     img = Image.open(png_path).convert('RGB')
@@ -30,8 +33,6 @@ def extract_areas_from_segmentation(png_path):
 
     return all_areas
 
-
-path = "../media/satellite/"
 
 
 def extract_segments(path):
@@ -69,6 +70,10 @@ def extract_segment_statistics(px_segment, rgb_segment):
     return np.concatenate([rgb_means, rgb_std, gray_level, sizes])
 
 
+
+extract_segments(path)
+
+
 filenames = [os.path.join(path, f) 
              for f in os.listdir(path) 
              if f.lower().endswith('.pkl') and os.path.isfile(os.path.join(path, f))]
@@ -90,7 +95,7 @@ for file_path in filenames:
         X.append(vector_description)
     X = np.stack(X)
     
-    data = {"px_segment": px_segment, 
+    data = {"loaded_areas": loaded_areas, 
             "data": X}
     
     pkl_path = file_path[:-4] + "_data.pkl"
