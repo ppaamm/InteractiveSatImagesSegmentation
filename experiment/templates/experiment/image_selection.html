@@ -19,7 +19,7 @@
                     <form action="{% url 'experiment:index' %}" method="get">
                         <input type="hidden" name="image" value="{{ filename }}">
                         <button type="submit" style="border: none; padding: 0; background: none;">
-                            <img src="{{ MEDIA_URL }}satellite/{{ filename }}.jpg" alt="{{ label }}">
+                            <img src="{{ MEDIA_URL }}satellite/{{ filename }}-600x400.jpg" alt="{{ label }}">
                         </button>
                     </form>
                 </div>
