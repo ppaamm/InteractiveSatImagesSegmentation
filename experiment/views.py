@@ -104,29 +104,30 @@ def load_segmentation(request):
 
     
 def next_step(request):
+    img_dim=(400,600) # TODO: Pass this as argument
+    
     selected_img = request.GET.get('image', 'source-image')
 
     labels = hyperparam_selector.next_step()
 
-    # # Generate segmentation image
-    # max_row = max(row for segment in px_segments for row, _ in segment)
-    # max_col = max(col for segment in px_segments for _, col in segment)
-    # H, W = max_row + 1, max_col + 1
-    # seg_image = np.zeros((H, W, 3), dtype=np.uint8)
+    # Generate segmentation image
+    H, W = img_dim
+    print(H, W)
+    seg_image = np.zeros((H, W, 3), dtype=np.uint8)
 
-    # colors = {
-    #     label: tuple(random.randint(0, 255) for _ in range(3))
-    #     for label in set(labels)
-    # }
+    colors = {
+        label: tuple(random.randint(0, 255) for _ in range(3))
+        for label in set(labels)
+    }
 
-    # for seg_index, pixels in enumerate(px_segments):
-    #     color = colors[labels[seg_index]]
-    #     for row, col in pixels:
-    #         seg_image[row, col] = color
+    for seg_index, pixels in enumerate(px_segments):
+        color = colors[labels[seg_index]]
+        for row, col in pixels:
+            seg_image[row, col] = color
 
-    # from PIL import Image
-    # filename = f"{selected_img}_step_{hyperparam_selector.current_step}.png"
-    # save_path = os.path.join(settings.MEDIA_ROOT, 'temp', filename)
-    # Image.fromarray(seg_image).save(save_path)
+    from PIL import Image
+    filename = f"{selected_img}_step_{hyperparam_selector.current_step}.png"
+    save_path = os.path.join(settings.MEDIA_ROOT, 'temp', filename)
+    Image.fromarray(seg_image).save(save_path)
 
     return JsonResponse({'status': 'ok'})

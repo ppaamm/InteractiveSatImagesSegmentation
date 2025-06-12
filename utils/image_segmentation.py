@@ -134,4 +134,4 @@ def rescale_images(path, a, dim_txt):
 #extract_segments(DIR_PATH)
 #build_segments_representations(DIR_PATH)
 
-rescale_images(DIR_PATH, 9.36, "600x400")
+rescale_images(DIR_PATH, 600/5616, "600x400")
