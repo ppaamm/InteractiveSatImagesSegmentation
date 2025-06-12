@@ -37,6 +37,9 @@
         </div>
         
         <div id="segmentation-status" style="margin-top: 10px;">Segmentation loading in progress...</div>
+        <div style="margin-top: 20px;">
+            <button id="next-step-btn">Next AI step</button>
+        </div>
     </div>
     
 </div>
@@ -94,6 +97,24 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(err => {
             status.textContent = "Failed to load segmentation.";
             console.error(err);
+        });
+});
+
+
+document.getElementById("next-step-btn").addEventListener("click", function () {
+    const imageParam = new URLSearchParams(window.location.search).get('image') || 'source-image';
+
+    fetch(`/experiment/next_step/?image=${imageParam}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                console.log("K Means worked")
+            } else {
+                console.error(data.message);
+            }
+        })
+        .catch(err => {
+            console.error("Error:", err);
         });
 });
 </script>
