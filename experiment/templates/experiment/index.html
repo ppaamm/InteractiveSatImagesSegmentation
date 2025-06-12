@@ -35,7 +35,8 @@
                 Display segmentation
             </label>
         </div>
-
+        
+        <div id="segmentation-status" style="margin-top: 10px;">Segmentation loading in progress...</div>
     </div>
     
 </div>
@@ -57,6 +58,43 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const overlay = document.getElementById("overlay-image");
+    const checkbox = document.getElementById("toggle-segmentation");
+    const status = document.getElementById("segmentation-status");
+    const imageParam = new URLSearchParams(window.location.search).get('image') || 'source-image';
+
+    if (checkbox && overlay) {
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                overlay.style.opacity = "{{ overlay_opacity }}";
+            } else {
+                overlay.style.opacity = "0";
+            }
+        });
+    };
+
+    fetch(`/experiment/load_segmentation/?image=${imageParam}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                /*
+                overlay.src = data.url;
+                overlay.style.opacity = checkbox && checkbox.checked ? "1" : "0";
+                */
+                status.textContent = "Segmentation loaded.";
+            } else {
+                status.textContent = "Failed to load segmentation.";
+                console.error(data.message);
+            }
+        })
+        .catch(err => {
+            status.textContent = "Failed to load segmentation.";
+            console.error(err);
+        });
 });
 </script>
 {% endblock script %}
