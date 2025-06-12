@@ -22,7 +22,7 @@ IMAGES = {"Castle": "2012-04-26-Muenchen-Tunnel_4K0G0080",
           }
 
 hyperparam_selector = None
-px_segments = None
+M_segments = None
 
 
 def save_temp_image(img, filename):
@@ -81,7 +81,7 @@ def index(request):
 
 
 def load_segmentation(request):
-    global hyperparam_selector, px_segments # TODO: Make this cleaner eventually
+    global hyperparam_selector, M_segments # TODO: Make this cleaner eventually
     
     selected_img = request.GET.get('image', 'source-image')
     segmentation_data_path = os.path.join(settings.MEDIA_ROOT, f'satellite/{selected_img}-600x400_data.pkl')
@@ -91,7 +91,7 @@ def load_segmentation(request):
             data = pickle.load(f)
             
         X = data['data']
-        px_segments = data['loaded_areas']
+        M_segments = data['loaded_areas']
         hyperparam_selector = HyperparameterSelection(X)
         
 
@@ -104,30 +104,36 @@ def load_segmentation(request):
 
     
 def next_step(request):
-    img_dim=(400,600) # TODO: Pass this as argument
+    H, W = M_segments.shape
     
     selected_img = request.GET.get('image', 'source-image')
 
     labels = hyperparam_selector.next_step()
 
     # Generate segmentation image
-    H, W = img_dim
-    print(H, W)
     seg_image = np.zeros((H, W, 3), dtype=np.uint8)
 
+    unique_cluster_labels = set(labels)
+    print(unique_cluster_labels)
     colors = {
         label: tuple(random.randint(0, 255) for _ in range(3))
-        for label in set(labels)
+        for label in unique_cluster_labels
     }
 
-    for seg_index, pixels in enumerate(px_segments):
-        color = colors[labels[seg_index]]
-        for row, col in pixels:
-            seg_image[row, col] = color
+    for row in range(H):
+        for col in range(W):
+            seg_id = M_segments[row, col]
+            if seg_id >= 0:
+                cluster_label = labels[seg_id]
+                seg_image[row, col] = colors[cluster_label]
 
+    # Save image
     from PIL import Image
     filename = f"{selected_img}_step_{hyperparam_selector.current_step}.png"
     save_path = os.path.join(settings.MEDIA_ROOT, 'temp', filename)
     Image.fromarray(seg_image).save(save_path)
-
+    
+    print("saved:", filename)
+    
+    #return JsonResponse({'status': 'ok', 'url': settings.MEDIA_URL + f'temp/{filename}'})
     return JsonResponse({'status': 'ok'})

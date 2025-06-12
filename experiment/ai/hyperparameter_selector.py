@@ -8,7 +8,7 @@ class HyperparameterSelection:
         self.X = X
         self.scaler = StandardScaler().fit(X)
         self.X_scaled = self.scaler.transform(X)
-        self.current_step = 1
+        self.current_step = 0
 
     def next_step(self):
         """Perform one step of segmentation with increasing complexity."""
