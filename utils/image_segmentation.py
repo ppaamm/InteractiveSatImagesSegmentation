@@ -100,6 +100,10 @@ def build_segments_representations(path):
         
         
 def scale_segments(all_segments, a):
+    """
+    DEPRECATED! This method produces segment descriptions with pixels in several
+    segments, and repeated pixels inside a same segment. 
+    """
     all_segments_a = []
 
     for segment in all_segments:
@@ -110,6 +114,35 @@ def scale_segments(all_segments, a):
         all_segments_a.append(scaled_segment)
 
     return all_segments_a
+
+
+def scale_segments_to_map(all_segments, a, output_shape=None):
+    # First, scale and record where each pixel wants to go
+    pixel_to_segment = {}
+    
+    for segment_id, segment in enumerate(all_segments):
+        for row, col in segment:
+            scaled_row = int(row * a)
+            scaled_col = int(col * a)
+            key = (scaled_row, scaled_col)
+
+            # Only assign if pixel hasn't been assigned yet
+            if key not in pixel_to_segment:
+                pixel_to_segment[key] = segment_id
+
+    # Determine output shape if not provided
+    if output_shape is None:
+        max_row = max(r for r, _ in pixel_to_segment.keys())
+        max_col = max(c for _, c in pixel_to_segment.keys())
+        output_shape = (max_row + 1, max_col + 1)
+
+    # Initialize segmentation map
+    seg_map = np.full(output_shape, -1, dtype=int)
+
+    for (r, c), seg_id in pixel_to_segment.items():
+        seg_map[r, c] = seg_id
+
+    return seg_map
 
 
 def rescale_images(path, a, dim_txt):
@@ -123,12 +156,33 @@ def rescale_images(path, a, dim_txt):
         with open(file_path, "rb") as f:
             data = pickle.load(f)
         
-        rescaled_data = { "loaded_areas": scale_segments(data["loaded_areas"], a),
+        rescaled_data = { "loaded_areas": scale_segments_to_map(data["loaded_areas"], a),
                           "data": data["data"]}
         pkl_path = f'{file_path[:-9]}-{dim_txt}_data.pkl'
         with open(pkl_path, "wb") as f:
             pickle.dump(rescaled_data, f)
-        
+    
+
+def deduplicate_px_segments(px_segments):
+    return [list(set(segment)) for segment in px_segments]
+
+    
+def compute_pixel_segment_count(px_segments):
+    # Determine image size by finding max row/col
+    max_row = max(row for segment in px_segments for row, _ in segment)
+    max_col = max(col for segment in px_segments for _, col in segment)
+    H, W = max_row + 1, max_col + 1
+
+    count_matrix = np.zeros((H, W), dtype=int)
+
+    for segment in px_segments:
+        for row, col in segment:
+            count_matrix[row, col] += 1
+
+    return count_matrix
+
+
+
 
 
 #extract_segments(DIR_PATH)
