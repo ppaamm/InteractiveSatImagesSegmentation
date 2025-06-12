@@ -4,8 +4,7 @@ from scipy.ndimage import label
 import os
 import pickle
 
-
-path = "../media/satellite/"
+DIR_PATH = "../media/satellite/"
 
 
 def extract_areas_from_segmentation(png_path):
@@ -70,34 +69,69 @@ def extract_segment_statistics(px_segment, rgb_segment):
     return np.concatenate([rgb_means, rgb_std, gray_level, sizes])
 
 
+def build_segments_representations(path):
+    filenames = [os.path.join(path, f) 
+                 for f in os.listdir(path) 
+                 if f.lower().endswith('.pkl') and os.path.isfile(os.path.join(path, f))]
+    
+    for file_path in filenames:
+        jpg_path = file_path[:-3] + 'jpg'
+        img = Image.open(jpg_path).convert('RGB')
+        arr = np.array(img)
+        
+        print(jpg_path)
+        
+        with open(file_path, "rb") as f:
+            loaded_areas = pickle.load(f)
+        
+        X = []
+        for px_segment in loaded_areas:
+            rgb_segment = extract_rgb_values(arr, px_segment)
+            vector_description = extract_segment_statistics(px_segment, rgb_segment)
+            X.append(vector_description)
+        X = np.stack(X)
+        
+        data = {"loaded_areas": loaded_areas, 
+                "data": X}
+        
+        pkl_path = file_path[:-4] + "_data.pkl"
+        with open(pkl_path, "wb") as f:
+            pickle.dump(data, f)
+        
+        
+def scale_segments(all_segments, a):
+    all_segments_a = []
 
-extract_segments(path)
+    for segment in all_segments:
+        scaled_segment = [
+            (int(row * a), int(col * a))
+            for row, col in segment
+        ]
+        all_segments_a.append(scaled_segment)
+
+    return all_segments_a
 
 
-filenames = [os.path.join(path, f) 
-             for f in os.listdir(path) 
-             if f.lower().endswith('.pkl') and os.path.isfile(os.path.join(path, f))]
+def rescale_images(path, a, dim_txt):
+    filenames = [os.path.join(path, f) 
+                 for f in os.listdir(path) 
+                 if f.lower().endswith('_data.pkl') and not(f.lower().endswith('x400_data.pkl')) 
+                 and os.path.isfile(os.path.join(path, f))]
+    
+    for file_path in filenames:
+        print(file_path)
+        with open(file_path, "rb") as f:
+            data = pickle.load(f)
+        
+        rescaled_data = { "loaded_areas": scale_segments(data["loaded_areas"], a),
+                          "data": data["data"]}
+        pkl_path = f'{file_path[:-9]}-{dim_txt}_data.pkl'
+        with open(pkl_path, "wb") as f:
+            pickle.dump(rescaled_data, f)
+        
 
-for file_path in filenames:
-    jpg_path = file_path[:-3] + 'jpg'
-    img = Image.open(jpg_path).convert('RGB')
-    arr = np.array(img)
-    
-    print(jpg_path)
-    
-    with open(file_path, "rb") as f:
-        loaded_areas = pickle.load(f)
-    
-    X = []
-    for px_segment in loaded_areas:
-        rgb_segment = extract_rgb_values(arr, px_segment)
-        vector_description = extract_segment_statistics(px_segment, rgb_segment)
-        X.append(vector_description)
-    X = np.stack(X)
-    
-    data = {"loaded_areas": loaded_areas, 
-            "data": X}
-    
-    pkl_path = file_path[:-4] + "_data.pkl"
-    with open(pkl_path, "wb") as f:
-        pickle.dump(data, f)
+
+#extract_segments(DIR_PATH)
+#build_segments_representations(DIR_PATH)
+
+rescale_images(DIR_PATH, 9.36, "600x400")
