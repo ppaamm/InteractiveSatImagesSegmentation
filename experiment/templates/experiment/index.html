@@ -58,6 +58,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const numColsInput = document.getElementById("num-columns");
     const imageParam = new URLSearchParams(window.location.search).get('image') || 'source-image';
 
+    function rgbToCss(rgbArray) {
+        return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
+    }
+
     // Toggle overlay visibility
     if (checkbox && overlay) {
         checkbox.addEventListener("change", () => {
@@ -65,61 +69,63 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Create cluster matrix
-    function generateMatrix(numClusters, numCols) {
-        const container = document.getElementById("matrix-container");
-        container.innerHTML = "";  // Clear previous content
+    function createMatrix(numClusters, numColumns, colors) {
+        let container = document.getElementById("cluster-matrix");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "cluster-matrix";
+            container.style.marginTop = "20px";
+            document.querySelector(".main-text").appendChild(container);
+        }
 
+        container.innerHTML = ""; // Clear previous matrix
         const table = document.createElement("table");
-        table.style.borderCollapse = "collapse";
+        table.style.margin = "0 auto";
+        const tbody = document.createElement("tbody");
 
         for (let i = 0; i < numClusters; i++) {
             const row = document.createElement("tr");
 
-            const rowLabel = document.createElement("td");
-            rowLabel.textContent = `Cluster ${i + 1}`;
-            rowLabel.style.padding = "5px";
-            row.appendChild(rowLabel);
+            const label = document.createElement("td");
+            label.textContent = `Cluster ${i + 1}`;
+            label.style.color = rgbToCss(colors[i]);
+            label.style.padding = "0 10px";
+            row.appendChild(label);
 
-            for (let j = 0; j < numCols; j++) {
+            for (let j = 0; j < numColumns; j++) {
                 const cell = document.createElement("td");
                 const input = document.createElement("input");
                 input.type = "text";
                 input.name = `cluster_${i}_col_${j}`;
-                input.style.width = "100px";
+                input.style.margin = "2px";
                 cell.appendChild(input);
                 row.appendChild(cell);
             }
 
-            table.appendChild(row);
+            tbody.appendChild(row);
         }
 
+        table.appendChild(tbody);
         container.appendChild(table);
     }
 
-    // Unified function to trigger an AI step
     function runNextStep() {
-        const numCols = parseInt(numColsInput.value) || 1;
-
         fetch(`/experiment/next_step/?image=${imageParam}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === "ok") {
-                    const newUrl = data.url + `?t=${Date.now()}`;
-                    overlay.src = newUrl;
-                    overlay.style.opacity = checkbox.checked ? overlay.dataset.opacity : "0";
-                    status.textContent = "Segmentation loaded.";
+                    overlay.src = data.url;
+                    overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
 
-                    if (data.num_clusters) {
-                        generateMatrix(data.num_clusters, numCols);
-                    }
+                    // Regenerate matrix
+                    const numCols = 3;  // You could make this dynamic
+                    createMatrix(data.num_clusters, numCols, data.colors);
+
                 } else {
-                    status.textContent = "Failed to compute segmentation.";
                     alert("Failed to compute next step: " + data.message);
                 }
             })
             .catch(err => {
-                status.textContent = "Failed to compute segmentation.";
                 console.error("Error:", err);
             });
     }

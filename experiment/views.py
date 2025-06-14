@@ -35,7 +35,24 @@ def save_temp_image(img, filename):
     return os.path.join(settings.MEDIA_URL, "temp", filename)
 
 
-
+def get_cluster_colors(n):
+    base_colors = [
+        (255, 0, 0),      # Red
+        (0, 128, 0),      # Green
+        (0, 0, 255),      # Blue
+        (255, 165, 0),    # Orange
+        (128, 0, 128),    # Purple
+        (0, 255, 255),    # Cyan
+        (255, 255, 0),    # Yellow
+        (255, 192, 203),  # Pink
+        (150, 75, 0),     # Brown
+        (128, 128, 128),  # Gray
+    ]
+    random.seed(42)
+    colors = base_colors.copy()
+    while len(colors) < n:
+        colors.append(tuple(random.randint(0, 255) for _ in range(3)))
+    return colors[:n]
 
 
 def image_selection(request):
@@ -161,10 +178,7 @@ def next_step(request):
     # Generate segmentation image
     seg_image = np.zeros((H, W, 3), dtype=np.uint8)
     unique_cluster_labels = set(labels)
-    colors = {
-        label: tuple(random.randint(0, 255) for _ in range(3))
-        for label in unique_cluster_labels
-    }
+    colors = get_cluster_colors(len(unique_cluster_labels))
 
     for row in range(H):
         for col in range(W):
@@ -178,8 +192,15 @@ def next_step(request):
     save_path = os.path.join(settings.MEDIA_ROOT, 'temp', filename)
     Image.fromarray(seg_image).save(save_path)
 
+
     return JsonResponse({
         'status': 'ok',
         'url': settings.MEDIA_URL + f'temp/{filename}',
-        'num_clusters': len(unique_cluster_labels)
+        'num_clusters': len(unique_cluster_labels),
+        'colors': [colors[label] for label in unique_cluster_labels],
     })
+    # return JsonResponse({
+    #     'status': 'ok',
+    #     'url': settings.MEDIA_URL + f'temp/{filename}',
+    #     'num_clusters': len(unique_cluster_labels)
+    # })
