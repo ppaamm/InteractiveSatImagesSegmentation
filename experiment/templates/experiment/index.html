@@ -179,7 +179,10 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(err => console.error("Error:", err));
     }
 
-    document.getElementById("add-segment-btn").addEventListener("click", () => addSegmentInput());
+    document.getElementById("add-segment-btn").addEventListener("click", () => {
+        const inputs = document.querySelectorAll(".segment-entry input");
+        addSegmentInput("Segment " + (inputs.length + 1));
+        });
 
     validateBtn.addEventListener("click", () => {
         const inputs = document.querySelectorAll(".segment-entry input");
@@ -201,8 +204,8 @@ document.addEventListener("DOMContentLoaded", function () {
     nextStepBtn.addEventListener("click", runNextStep);
 
     // Initialize with two segment fields
-    addSegmentInput("Cluster 1");
-    addSegmentInput("Cluster 2");
+    addSegmentInput("Segment 1");
+    addSegmentInput("Segment 2");
 });
 </script>
 {% endblock script %}
