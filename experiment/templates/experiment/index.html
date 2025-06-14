@@ -16,17 +16,11 @@
     
     
     
-    <div class="main-text">
-    <!--
-        {% if image_url %}
-            <img src="{{ image_url }}" alt="Original image" id="image-display">
-        {% else %}
-            <p>No image to show.</p>
-        {% endif %} -->
-        
+    <div class="main-text">        
         <div class="image-overlay-container">
             <img src="{{ background_image_url }}" alt="Background" class="background-image">
-            <img src="{{ overlay_image_url }}" alt="Overlay" id="overlay-image" style="opacity: {{ overlay_opacity }};">
+            <img src="{{ overlay_image_url }}" alt="Overlay" id="overlay-image" 
+                 style="opacity: {{ overlay_opacity }};" data-opacity="{{ overlay_opacity }}">
         </div>
         
         <div style="margin-top: 15px;">
@@ -38,9 +32,17 @@
         
         <div id="segmentation-status" style="margin-top: 10px;">Segmentation loading in progress...</div>
         <div style="margin-top: 20px;">
+            <label>Number of columns:
+                <input type="number" id="num-columns" min="1" value="3">
+            </label>
+        </div>
+        
+        <div id="matrix-container" style="margin-top: 15px;"></div>
+    </div>
+        <div style="margin-top: 20px;">
             <button id="next-step-btn">Next AI step</button>
         </div>
-    </div>
+        
     
 </div>
 
@@ -49,45 +51,25 @@
 {% block script %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const checkbox = document.getElementById("toggle-segmentation");
-    const overlay = document.getElementById("overlay-image");
-    
-    if (checkbox && overlay) {
-        checkbox.addEventListener("change", () => {
-            if (checkbox.checked) {
-                overlay.style.opacity = "{{ overlay_opacity }}";
-            } else {
-                overlay.style.opacity = "0";
-            }
-        });
-    }
-});
-
-
-document.addEventListener("DOMContentLoaded", function () {
     const overlay = document.getElementById("overlay-image");
     const checkbox = document.getElementById("toggle-segmentation");
     const status = document.getElementById("segmentation-status");
+    const nextStepBtn = document.getElementById("next-step-btn");
+    const numColsInput = document.getElementById("num-columns");
     const imageParam = new URLSearchParams(window.location.search).get('image') || 'source-image';
 
+    // Toggle overlay visibility
     if (checkbox && overlay) {
         checkbox.addEventListener("change", () => {
-            if (checkbox.checked) {
-                overlay.style.opacity = "{{ overlay_opacity }}";
-            } else {
-                overlay.style.opacity = "0";
-            }
+            overlay.style.opacity = checkbox.checked ? overlay.dataset.opacity : "0";
         });
-    };
+    }
 
+    // Initial segmentation loading
     fetch(`/experiment/load_segmentation/?image=${imageParam}`)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'ok') {
-                /*
-                overlay.src = data.url;
-                overlay.style.opacity = checkbox && checkbox.checked ? "1" : "0";
-                */
                 status.textContent = "Segmentation loaded.";
             } else {
                 status.textContent = "Failed to load segmentation.";
@@ -98,29 +80,65 @@ document.addEventListener("DOMContentLoaded", function () {
             status.textContent = "Failed to load segmentation.";
             console.error(err);
         });
-});
 
+    // Create cluster matrix
+    function generateMatrix(numClusters, numCols) {
+        const container = document.getElementById("matrix-container");
+        container.innerHTML = "";  // Clear previous content
 
-document.getElementById("next-step-btn").addEventListener("click", function () {
-    const imageParam = new URLSearchParams(window.location.search).get('image') || 'source-image';
+        const table = document.createElement("table");
+        table.style.borderCollapse = "collapse";
 
-    fetch(`/experiment/next_step/?image=${imageParam}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "ok") {
-            const overlay = document.getElementById("overlay-image");
-                        //const newUrl = `/media/temp/${imageName}_step_${Date.now()}.png`;
-                        const newUrl = data.url;
-                        overlay.src = newUrl;
-                    } else {
-                        alert("Failed to compute next step: " + data.message);
-                        nextStepBtn.disabled = false;
-                        nextStepBtn.textContent = "Next Step";
+        for (let i = 0; i < numClusters; i++) {
+            const row = document.createElement("tr");
+
+            const rowLabel = document.createElement("td");
+            rowLabel.textContent = `Cluster ${i + 1}`;
+            rowLabel.style.padding = "5px";
+            row.appendChild(rowLabel);
+
+            for (let j = 0; j < numCols; j++) {
+                const cell = document.createElement("td");
+                const input = document.createElement("input");
+                input.type = "text";
+                input.name = `cluster_${i}_col_${j}`;
+                input.style.width = "100px";
+                cell.appendChild(input);
+                row.appendChild(cell);
+            }
+
+            table.appendChild(row);
+        }
+
+        container.appendChild(table);
+    }
+
+    // Handle Next Step button
+    nextStepBtn.addEventListener("click", function () {
+        const numCols = parseInt(numColsInput.value) || 1;
+
+        fetch(`/experiment/next_step/?image=${imageParam}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    // Update overlay image
+                    const newUrl = data.url + `?t=${Date.now()}`; // cache-busting
+                    overlay.src = newUrl;
+                    overlay.style.opacity = checkbox.checked ? overlay.dataset.opacity : "0";
+
+                    // Regenerate cluster matrix
+                    if (data.num_clusters) {
+                        generateMatrix(data.num_clusters, numCols);
                     }
-        })
-        .catch(err => {
-            console.error("Error:", err);
-        });
+                } else {
+                    alert("Failed to compute next step: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("An error occurred while computing the next step.");
+            });
+    });
 });
 </script>
 {% endblock script %}

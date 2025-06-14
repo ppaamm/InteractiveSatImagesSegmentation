@@ -135,5 +135,10 @@ def next_step(request):
     
     print("saved:", filename)
     
-    return JsonResponse({'status': 'ok', 'url': settings.MEDIA_URL + f'temp/{filename}'})
+    #return JsonResponse({'status': 'ok', 'url': settings.MEDIA_URL + f'temp/{filename}'})
+    return JsonResponse({
+        'status': 'ok',
+        'url': settings.MEDIA_URL + f'temp/{filename}',
+        'num_clusters': len(unique_cluster_labels),
+    })
     #return JsonResponse({'status': 'ok'})
