@@ -59,8 +59,7 @@ def image_selection(request):
 def index(request):
     selected_img = request.GET.get('image', 'source-image')  # without extension
     image_url = settings.MEDIA_URL + f'satellite/{selected_img}.jpg'
-    segmentation_url = settings.MEDIA_URL + f'satellite/{selected_img}.png'
-    #segmentation_url = save_temp_image(seg_image, f'{selected_img}_seg.png')
+    #segmentation_url = settings.MEDIA_URL + f'satellite/{selected_img}.png'
     
     session_key = request.session.session_key or request.session.create()
     
@@ -80,7 +79,8 @@ def index(request):
     context = {
         'image_url': image_url,
         'background_image_url': image_url,
-        'overlay_image_url': segmentation_url,
+        #'overlay_image_url': segmentation_url,
+        'overlay_image_url': '',
         'overlay_opacity': OPACITY,
     }
 
