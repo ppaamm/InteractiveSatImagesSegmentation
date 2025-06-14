@@ -65,22 +65,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Initial segmentation loading
-    fetch(`/experiment/load_segmentation/?image=${imageParam}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok') {
-                status.textContent = "Segmentation loaded.";
-            } else {
-                status.textContent = "Failed to load segmentation.";
-                console.error(data.message);
-            }
-        })
-        .catch(err => {
-            status.textContent = "Failed to load segmentation.";
-            console.error(err);
-        });
-
     // Create cluster matrix
     function generateMatrix(numClusters, numCols) {
         const container = document.getElementById("matrix-container");
@@ -113,32 +97,39 @@ document.addEventListener("DOMContentLoaded", function () {
         container.appendChild(table);
     }
 
-    // Handle Next Step button
-    nextStepBtn.addEventListener("click", function () {
+    // Unified function to trigger an AI step
+    function runNextStep() {
         const numCols = parseInt(numColsInput.value) || 1;
 
         fetch(`/experiment/next_step/?image=${imageParam}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === "ok") {
-                    // Update overlay image
-                    const newUrl = data.url + `?t=${Date.now()}`; // cache-busting
+                    const newUrl = data.url + `?t=${Date.now()}`;
                     overlay.src = newUrl;
                     overlay.style.opacity = checkbox.checked ? overlay.dataset.opacity : "0";
+                    status.textContent = "Segmentation loaded.";
 
-                    // Regenerate cluster matrix
                     if (data.num_clusters) {
                         generateMatrix(data.num_clusters, numCols);
                     }
                 } else {
+                    status.textContent = "Failed to compute segmentation.";
                     alert("Failed to compute next step: " + data.message);
                 }
             })
             .catch(err => {
+                status.textContent = "Failed to compute segmentation.";
                 console.error("Error:", err);
-                alert("An error occurred while computing the next step.");
             });
-    });
+    }
+
+    // Bind Next Step button to runNextStep
+    nextStepBtn.addEventListener("click", runNextStep);
+
+    // Automatically run first step on load
+    runNextStep();
 });
 </script>
 {% endblock script %}
+
