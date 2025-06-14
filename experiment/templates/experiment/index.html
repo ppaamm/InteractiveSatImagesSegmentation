@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Toggle overlay visibility
     if (checkbox && overlay) {
         checkbox.addEventListener("change", () => {
-            overlay.style.opacity = checkbox.checked ? overlay.dataset.opacity : "0";
+            overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
         });
     }
 
