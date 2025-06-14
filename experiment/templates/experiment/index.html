@@ -15,36 +15,39 @@
     </div>
     
     
+    <div class="main-text" style="display: flex; gap: 30px; align-items: flex-start;">
+        <!-- Left: visualization -->
+        <div class="image-section">
+            <div class="image-overlay-container">
+                <img src="{{ background_image_url }}" alt="Background" class="background-image">
+                <img src="{{ overlay_image_url }}" alt="Overlay" id="overlay-image" style="opacity: {{ overlay_opacity }};">
+            </div>
     
-    <div class="main-text">        
-        <div class="image-overlay-container">
-            <img src="{{ background_image_url }}" alt="Background" class="background-image">
-            <img src="{{ overlay_image_url }}" alt="Overlay" id="overlay-image" 
-                 style="opacity: {{ overlay_opacity }};" data-opacity="{{ overlay_opacity }}">
+            <div style="margin-top: 15px;">
+                <label>
+                    <input type="checkbox" id="toggle-segmentation" checked>
+                    Display segmentation
+                </label>
+            </div>
+    
+            <!-- Keep column input field on the left -->
+            <div style="margin-top: 15px;">
+                <label for="num-columns">Number of columns:</label>
+                <input type="number" id="num-columns" value="3" min="1" max="10" style="width: 60px;">
+            </div>
         </div>
-        
-        <div style="margin-top: 15px;">
-            <label>
-                <input type="checkbox" id="toggle-segmentation" checked>
-                Display segmentation
-            </label>
-        </div>
-        
-        <div id="segmentation-status" style="margin-top: 10px;">Segmentation loading in progress...</div>
-        <div style="margin-top: 20px;">
-            <label>Number of columns:
-                <input type="number" id="num-columns" min="1" value="3">
-            </label>
-        </div>
-        
-        <div id="matrix-container" style="margin-top: 15px;"></div>
-    </div>
-        <div style="margin-top: 20px;">
+    
+        <!-- Right: confusion matrix -->
+        <div class="right-section" style="flex-shrink: 0;">
+            <div id="cluster-matrix" style="margin-bottom: 20px;"></div>
             <button id="next-step-btn">Next AI step</button>
         </div>
-        
-    
+    </div>
+
 </div>
+
+
+
 
 {% endblock %}
 
