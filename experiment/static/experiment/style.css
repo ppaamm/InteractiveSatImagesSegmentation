@@ -65,3 +65,73 @@
     transform: scale(1.2);
     z-index: 2;
 }
+
+
+.delete-segment-btn {
+    background-color: #ffdddd;
+    border: 2px solid red;
+    color: red;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    line-height: 18px;
+    text-align: center;
+    padding: 0;
+}
+
+.delete-segment-btn:hover {
+    background-color: #ffcccc;
+    border-color: darkred;
+}
+
+.segment-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 10px; /* space between input and button */
+}
+
+.segment-row input {
+    flex: 1;
+    padding: 5px;
+}
+
+.add-segment-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    margin-top: 10px;
+}
+
+.add-segment-btn:hover .add-icon {
+    background-color: #28a745;
+    filter: brightness(1.1);
+}
+
+.add-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.add-text {
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+}

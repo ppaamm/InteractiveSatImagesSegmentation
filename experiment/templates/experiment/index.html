@@ -13,41 +13,43 @@
     <div class="title-container">
         <div class = "title">Display a plot</div>
     </div>
-    
-    
+
     <div class="main-text" style="display: flex; gap: 30px; align-items: flex-start;">
         <!-- Left: visualization -->
         <div class="image-section">
             <div class="image-overlay-container">
                 <img src="{{ background_image_url }}" alt="Background" class="background-image">
-                <img src="{{ overlay_image_url }}" alt="Overlay" id="overlay-image" style="opacity: {{ overlay_opacity }};">
+                <img src="{{ overlay_image_url }}" alt="Overlay" id="overlay-image" style="opacity: 0;">
             </div>
-    
+
             <div style="margin-top: 15px;">
                 <label>
-                    <input type="checkbox" id="toggle-segmentation" checked>
+                    <input type="checkbox" id="toggle-segmentation" disabled>
                     Display segmentation
                 </label>
             </div>
-    
-            <!-- Keep column input field on the left -->
-            <div style="margin-top: 15px;">
-                <label for="num-columns">Number of columns:</label>
-                <input type="number" id="num-columns" value="3" min="1" max="10" style="width: 60px;">
-            </div>
         </div>
-    
-        <!-- Right: confusion matrix -->
+
+        <!-- Right: confusion matrix / segment input -->
         <div class="right-section" style="flex-shrink: 0;">
-            <div id="cluster-matrix" style="margin-bottom: 20px;"></div>
-            <button id="next-step-btn">Next AI step</button>
+            <div id="segment-inputs">
+                <p>Enter known segments:</p>
+                <div id="segment-list"></div>
+                <button id="add-segment-btn" class="add-segment-btn">
+                    <span class="add-icon">+</span>
+                    <span class="add-text">Add segment</span>
+                </button>
+                <br><br>
+                <div class="button-container">
+                    <button id="validate-segments" disabled>Validate</button>
+                </div>
+            </div>
+
+            <div id="cluster-matrix" style="margin-bottom: 20px; display: none;"></div>
+            <button id="next-step-btn" style="display: none;">Next AI step</button>
         </div>
     </div>
-
 </div>
-
-
-
 
 {% endblock %}
 
@@ -55,90 +57,94 @@
 <script>
 let currentColumnHeaders = [];
 
+function updateValidateButtonState() {
+    const segments = document.querySelectorAll('.segment-entry');
+    const validateBtn = document.getElementById("validate-segments");
+    validateBtn.disabled = segments.length < 2;
+}
+
+function addSegmentInput(name = "") {
+    const container = document.getElementById("segment-list");
+    const div = document.createElement("div");
+    div.className = "segment-entry";
+    div.classList.add("segment-row");
+    
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = name;
+    input.placeholder = "Segment name";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.innerHTML = "&minus;";
+    deleteBtn.classList.add("delete-segment-btn");
+    
+    deleteBtn.onclick = () => {
+        container.removeChild(div);
+        updateValidateButtonState();
+    };
+
+    div.appendChild(input);
+    div.appendChild(deleteBtn);
+    container.appendChild(div);
+
+    updateValidateButtonState();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const overlay = document.getElementById("overlay-image");
     const checkbox = document.getElementById("toggle-segmentation");
-    const status = document.getElementById("segmentation-status");
     const nextStepBtn = document.getElementById("next-step-btn");
-    const numColsInput = document.getElementById("num-columns");
+    const validateBtn = document.getElementById("validate-segments");
     const imageParam = new URLSearchParams(window.location.search).get('image') || 'source-image';
-
-    function rgbToCss(rgbArray) {
-        return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
-    }
-
-    // Toggle overlay visibility
-    if (checkbox && overlay) {
-        checkbox.addEventListener("change", () => {
-            overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
-        });
-    }
 
     function createMatrix(numClusters, numColumns, colors) {
         let container = document.getElementById("cluster-matrix");
-        if (!container) {
-            container = document.createElement("div");
-            container.id = "cluster-matrix";
-            container.style.marginTop = "20px";
-            document.querySelector(".main-text").appendChild(container);
-        }
-    
-        container.innerHTML = ""; // Clear previous matrix
+        container.innerHTML = "";
+        container.style.display = "block";
+
         const table = document.createElement("table");
         table.style.margin = "0 auto";
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
-    
-        // Empty cell for top-left corner
+
         const corner = document.createElement("th");
         headerRow.appendChild(corner);
-    
-        // If we are initializing or changing column count, update the headers array
+
         if (currentColumnHeaders.length !== numColumns) {
             currentColumnHeaders = Array.from({ length: numColumns }, (_, j) => `Column ${j + 1}`);
         }
-    
-        // Create editable column headers
+
         for (let j = 0; j < numColumns; j++) {
             const header = document.createElement("th");
             header.textContent = currentColumnHeaders[j];
             header.contentEditable = true;
             header.style.cursor = "pointer";
             header.style.borderBottom = "1px dashed transparent";
-    
-            header.addEventListener("mouseenter", () => {
-                header.style.borderBottom = "1px dashed gray";
-            });
-            header.addEventListener("mouseleave", () => {
-                header.style.borderBottom = "1px dashed transparent";
-            });
-            header.addEventListener("keydown", function (e) {
+
+            header.addEventListener("mouseenter", () => header.style.borderBottom = "1px dashed gray");
+            header.addEventListener("mouseleave", () => header.style.borderBottom = "1px dashed transparent");
+            header.addEventListener("keydown", e => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     header.blur();
                 }
             });
-            header.addEventListener("blur", function () {
-                currentColumnHeaders[j] = header.textContent;
-            });
-    
+            header.addEventListener("blur", () => currentColumnHeaders[j] = header.textContent);
+
             headerRow.appendChild(header);
         }
         thead.appendChild(headerRow);
         table.appendChild(thead);
-    
-        // Body with rows for each cluster
+
         const tbody = document.createElement("tbody");
-    
         for (let i = 0; i < numClusters; i++) {
             const row = document.createElement("tr");
-    
             const labelCell = document.createElement("td");
             labelCell.textContent = `Cluster ${i + 1}`;
             labelCell.style.color = `rgb(${colors[i][0]}, ${colors[i][1]}, ${colors[i][2]})`;
             labelCell.style.padding = "0 10px";
             row.appendChild(labelCell);
-    
+
             for (let j = 0; j < numColumns; j++) {
                 const cell = document.createElement("td");
                 const input = document.createElement("input");
@@ -148,16 +154,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 cell.appendChild(input);
                 row.appendChild(cell);
             }
-    
+
             tbody.appendChild(row);
         }
-    
+
         table.appendChild(tbody);
         container.appendChild(table);
     }
-    
-
-    
 
     function runNextStep() {
         fetch(`/experiment/next_step/?image=${imageParam}`)
@@ -167,25 +170,39 @@ document.addEventListener("DOMContentLoaded", function () {
                     overlay.src = data.url;
                     overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
 
-                    // Regenerate matrix
-                    const numCols = 3;  // You could make this dynamic
+                    const numCols = currentColumnHeaders.length;
                     createMatrix(data.num_clusters, numCols, data.colors);
-
                 } else {
                     alert("Failed to compute next step: " + data.message);
                 }
             })
-            .catch(err => {
-                console.error("Error:", err);
-            });
+            .catch(err => console.error("Error:", err));
     }
 
-    // Bind Next Step button to runNextStep
+    document.getElementById("add-segment-btn").addEventListener("click", () => addSegmentInput());
+
+    validateBtn.addEventListener("click", () => {
+        const inputs = document.querySelectorAll(".segment-entry input");
+        currentColumnHeaders = Array.from(inputs).map(input => input.value || "Unnamed");
+
+        document.getElementById("segment-inputs").style.display = "none";
+        document.getElementById("next-step-btn").style.display = "block";
+        checkbox.disabled = false;
+        checkbox.checked = true;
+        overlay.style.opacity = "{{ overlay_opacity }}";
+
+        runNextStep();
+    });
+
+    checkbox.addEventListener("change", () => {
+        overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
+    });
+
     nextStepBtn.addEventListener("click", runNextStep);
 
-    // Automatically run first step on load
-    runNextStep();
+    // Initialize with two segment fields
+    addSegmentInput("Cluster 1");
+    addSegmentInput("Cluster 2");
 });
 </script>
 {% endblock script %}
-

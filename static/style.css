@@ -83,7 +83,7 @@ button{
   background-color: #275CB2;
   color: white;
   cursor: pointer;
-  width: 30%;
+  //width: 30%;
   opacity: 0.8;
   height:45px;
   border: none;
