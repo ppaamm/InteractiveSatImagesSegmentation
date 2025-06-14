@@ -50,6 +50,8 @@
 
 {% block script %}
 <script>
+let currentColumnHeaders = [];
+
 document.addEventListener("DOMContentLoaded", function () {
     const overlay = document.getElementById("overlay-image");
     const checkbox = document.getElementById("toggle-segmentation");
@@ -77,21 +79,63 @@ document.addEventListener("DOMContentLoaded", function () {
             container.style.marginTop = "20px";
             document.querySelector(".main-text").appendChild(container);
         }
-
+    
         container.innerHTML = ""; // Clear previous matrix
         const table = document.createElement("table");
         table.style.margin = "0 auto";
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+    
+        // Empty cell for top-left corner
+        const corner = document.createElement("th");
+        headerRow.appendChild(corner);
+    
+        // If we are initializing or changing column count, update the headers array
+        if (currentColumnHeaders.length !== numColumns) {
+            currentColumnHeaders = Array.from({ length: numColumns }, (_, j) => `Column ${j + 1}`);
+        }
+    
+        // Create editable column headers
+        for (let j = 0; j < numColumns; j++) {
+            const header = document.createElement("th");
+            header.textContent = currentColumnHeaders[j];
+            header.contentEditable = true;
+            header.style.cursor = "pointer";
+            header.style.borderBottom = "1px dashed transparent";
+    
+            header.addEventListener("mouseenter", () => {
+                header.style.borderBottom = "1px dashed gray";
+            });
+            header.addEventListener("mouseleave", () => {
+                header.style.borderBottom = "1px dashed transparent";
+            });
+            header.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    header.blur();
+                }
+            });
+            header.addEventListener("blur", function () {
+                currentColumnHeaders[j] = header.textContent;
+            });
+    
+            headerRow.appendChild(header);
+        }
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+    
+        // Body with rows for each cluster
         const tbody = document.createElement("tbody");
-
+    
         for (let i = 0; i < numClusters; i++) {
             const row = document.createElement("tr");
-
-            const label = document.createElement("td");
-            label.textContent = `Cluster ${i + 1}`;
-            label.style.color = rgbToCss(colors[i]);
-            label.style.padding = "0 10px";
-            row.appendChild(label);
-
+    
+            const labelCell = document.createElement("td");
+            labelCell.textContent = `Cluster ${i + 1}`;
+            labelCell.style.color = `rgb(${colors[i][0]}, ${colors[i][1]}, ${colors[i][2]})`;
+            labelCell.style.padding = "0 10px";
+            row.appendChild(labelCell);
+    
             for (let j = 0; j < numColumns; j++) {
                 const cell = document.createElement("td");
                 const input = document.createElement("input");
@@ -101,13 +145,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 cell.appendChild(input);
                 row.appendChild(cell);
             }
-
+    
             tbody.appendChild(row);
         }
-
+    
         table.appendChild(tbody);
         container.appendChild(table);
     }
+    
+
+    
 
     function runNextStep() {
         fetch(`/experiment/next_step/?image=${imageParam}`)
