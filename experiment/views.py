@@ -135,5 +135,5 @@ def next_step(request):
     
     print("saved:", filename)
     
-    #return JsonResponse({'status': 'ok', 'url': settings.MEDIA_URL + f'temp/{filename}'})
-    return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'ok', 'url': settings.MEDIA_URL + f'temp/{filename}'})
+    #return JsonResponse({'status': 'ok'})

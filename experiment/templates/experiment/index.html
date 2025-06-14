@@ -107,11 +107,16 @@ document.getElementById("next-step-btn").addEventListener("click", function () {
     fetch(`/experiment/next_step/?image=${imageParam}`)
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'ok') {
-                console.log("K Means worked")
-            } else {
-                console.error(data.message);
-            }
+            if (data.status === "ok") {
+            const overlay = document.getElementById("overlay-image");
+                        //const newUrl = `/media/temp/${imageName}_step_${Date.now()}.png`;
+                        const newUrl = data.url;
+                        overlay.src = newUrl;
+                    } else {
+                        alert("Failed to compute next step: " + data.message);
+                        nextStepBtn.disabled = false;
+                        nextStepBtn.textContent = "Next Step";
+                    }
         })
         .catch(err => {
             console.error("Error:", err);
