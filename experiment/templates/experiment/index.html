@@ -66,9 +66,8 @@ function updateValidateButtonState() {
 function addSegmentInput(name = "") {
     const container = document.getElementById("segment-list");
     const div = document.createElement("div");
-    div.className = "segment-entry";
-    div.classList.add("segment-row");
-    
+    div.className = "segment-entry segment-row";
+
     const input = document.createElement("input");
     input.type = "text";
     input.value = name;
@@ -77,15 +76,28 @@ function addSegmentInput(name = "") {
     const deleteBtn = document.createElement("button");
     deleteBtn.innerHTML = "&minus;";
     deleteBtn.classList.add("delete-segment-btn");
-    
+
     deleteBtn.onclick = () => {
         container.removeChild(div);
         updateValidateButtonState();
     };
+    
+    input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            input.blur();  // Removes focus, committing the text
+        }
+    });
 
     div.appendChild(input);
     div.appendChild(deleteBtn);
     container.appendChild(div);
+
+    // Automatically focus and select the new input field
+    setTimeout(() => {
+        input.focus();
+        input.select();  // This selects all the text
+    }, 0);
 
     updateValidateButtonState();
 }
@@ -205,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Initialize with two segment fields
     addSegmentInput("Segment 1");
-    addSegmentInput("Segment 2");
+    //addSegmentInput("Segment 2");
 });
 </script>
 {% endblock script %}
