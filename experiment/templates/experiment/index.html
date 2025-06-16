@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
     /* ----------------- CHECKS THE VALIDITY OF THE MATRIX ----------------- */
     
     
-    function check_matrix_validity () {
+function check_matrix_validity () {
     const matrix = document.querySelector("#cluster-matrix table");
     if (!matrix) return false;
 
@@ -206,8 +206,9 @@ document.addEventListener("DOMContentLoaded", function () {
         inputs.forEach((input, colIdx) => {
             const val = input.value.trim();
             if (val !== "") {
-                if (!/^-?\d+(\.\d+)?$/.test(val)) {
+                if (!/^\d+(\.\d+)?$/.test(val)) {  // Only numbers ≥ 0 allowed
                     hasError = true;
+                    
                     valid = false;
                 } else {
                     const parsed = parseFloat(val);
@@ -225,14 +226,14 @@ document.addEventListener("DOMContentLoaded", function () {
         if (hasError) {
             const error = document.createElement("span");
             error.className = "row-error";
-            error.textContent = "Invalid values or row sum > 100";
+            error.textContent = "Row sum must be 100";
             error.style.color = "red";
             error.style.marginLeft = "10px";
             row.appendChild(error);
         }
     });
 
-    // Check column constraints
+    // Check column constraints: at least one non-zero per column
     const emptyCols = columnSums
         .map((sum, idx) => ({ idx, sum }))
         .filter(obj => obj.sum <= 0);
@@ -240,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (emptyCols.length > 0) {
         valid = false;
         const names = emptyCols.map(obj => currentColumnHeaders[obj.idx] || `Column ${obj.idx + 1}`);
-        const errorText = `${names.join(", ")} must be found in at least one of the produced segment`;
+        const errorText = `${names.join(", ")} must be found in at least one segment`;
 
         const msg = document.createElement("div");
         msg.id = "column-error-msg";
