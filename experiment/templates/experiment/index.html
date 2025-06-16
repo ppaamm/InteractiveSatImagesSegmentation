@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
             for (let j = 0; j < numColumns; j++) {
                 const cell = document.createElement("td");
                 const input = document.createElement("input");
-                input.type = "text";
+                input.type = "number";
                 input.name = `cluster_${i}_col_${j}`;
                 input.style.margin = "2px";
                 cell.appendChild(input);
@@ -174,7 +174,95 @@ document.addEventListener("DOMContentLoaded", function () {
         container.appendChild(table);
     }
 
-    function runNextStep() {
+
+    /* ----------------- CHECKS THE VALIDITY OF THE MATRIX ----------------- */
+    
+    
+    function check_matrix_validity () {
+    const matrix = document.querySelector("#cluster-matrix table");
+    if (!matrix) return false;
+
+    const rows = matrix.querySelectorAll("tbody tr");
+    let valid = true;
+
+    // Clear previous row-level errors
+    rows.forEach(row => {
+        const existingError = row.querySelector(".row-error");
+        if (existingError) existingError.remove();
+    });
+
+    // Clear previous column-level error
+    const colError = document.getElementById("column-error-msg");
+    if (colError) colError.remove();
+
+    const numColumns = currentColumnHeaders.length;
+    const columnSums = Array(numColumns).fill(0);
+
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        let rowSum = 0;
+        let hasError = false;
+
+        inputs.forEach((input, colIdx) => {
+            const val = input.value.trim();
+            if (val !== "") {
+                if (!/^-?\d+(\.\d+)?$/.test(val)) {
+                    hasError = true;
+                    valid = false;
+                } else {
+                    const parsed = parseFloat(val);
+                    rowSum += parsed;
+                    columnSums[colIdx] += parsed;
+                }
+            }
+        });
+
+        if (rowSum > 100) {
+            hasError = true;
+            valid = false;
+        }
+
+        if (hasError) {
+            const error = document.createElement("span");
+            error.className = "row-error";
+            error.textContent = "Invalid values or row sum > 100";
+            error.style.color = "red";
+            error.style.marginLeft = "10px";
+            row.appendChild(error);
+        }
+    });
+
+    // Check column constraints
+    const emptyCols = columnSums
+        .map((sum, idx) => ({ idx, sum }))
+        .filter(obj => obj.sum <= 0);
+
+    if (emptyCols.length > 0) {
+        valid = false;
+        const names = emptyCols.map(obj => currentColumnHeaders[obj.idx] || `Column ${obj.idx + 1}`);
+        const errorText = `${names.join(", ")} must be found in at least one of the produced segment`;
+
+        const msg = document.createElement("div");
+        msg.id = "column-error-msg";
+        msg.textContent = errorText;
+        msg.style.color = "red";
+        msg.style.marginBottom = "10px";
+
+        const button = document.getElementById("next-step-btn");
+        button.parentNode.insertBefore(msg, button);
+    }
+
+    return valid;
+}
+
+    
+    
+    
+    /* ----------------- RUN NEXT STEP ----------------- */
+    
+    
+    function runNextStep () {
+
         fetch(`/experiment/next_step/?image=${imageParam}`)
             .then(response => response.json())
             .then(data => {
@@ -189,13 +277,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .catch(err => console.error("Error:", err));
-    }
+    };
+
+    
+    
 
     document.getElementById("add-segment-btn").addEventListener("click", () => {
         const inputs = document.querySelectorAll(".segment-entry input");
         addSegmentInput("Segment " + (inputs.length + 1));
         });
 
+    
+    
+    /* ----------------- VALIDATE BUTTON ----------------- */
+    
+    
     validateBtn.addEventListener("click", () => {
         const inputs = document.querySelectorAll(".segment-entry input");
         currentColumnHeaders = Array.from(inputs).map(input => input.value || "Unnamed");
@@ -208,12 +304,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         runNextStep();
     });
+    
+    
 
     checkbox.addEventListener("change", () => {
         overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
     });
 
-    nextStepBtn.addEventListener("click", runNextStep);
+    nextStepBtn.addEventListener("click", () => {
+        if (check_matrix_validity()) { runNextStep() };
+    });
 
     // Initialize with two segment fields
     addSegmentInput("Segment 1");
