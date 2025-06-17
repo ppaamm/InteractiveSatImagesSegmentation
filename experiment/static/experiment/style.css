@@ -158,9 +158,31 @@
     border: 2px solid transparent;
     cursor: pointer;
     transition: opacity 0.3s, border 0.3s;
+    object-fit: cover;
 }
 
 .ribbon-thumbnail.current {
     opacity: 1;
     border-color: #000;
+}
+
+.favorite-icon {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 16px;
+    color: #bbb;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    user-select: none;
+}
+
+.favorite-icon.filled {
+    color: red;
 }

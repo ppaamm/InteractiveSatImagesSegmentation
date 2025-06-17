@@ -262,28 +262,32 @@ function check_matrix_validity () {
 
 /* ----------------- SEGMENTATION RIBBON ----------------- */
 
+let favoriteSteps = new Set();
+
 function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     const ribbon = document.getElementById("segmentation-ribbon");
     ribbon.innerHTML = "";
     ribbon.style.display = "flex";
 
     for (let i = 1; i <= totalSteps; i++) {
+        const wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
+        wrapper.className = "ribbon-thumbnail-wrapper";
+
         const img = document.createElement("img");
         img.src = `/media/temp/${baseName}_step_${i}.png`;
         img.className = "ribbon-thumbnail";
         if (i === currentStep) img.classList.add("current");
 
+        // Click to view segmentation
         img.addEventListener("click", () => {
-            // Display selected segmentation
             const overlay = document.getElementById("overlay-image");
             overlay.src = `/media/temp/${baseName}_step_${i}.png`;
             overlay.style.opacity = document.getElementById("toggle-segmentation").checked ? "{{ overlay_opacity }}" : "0";
 
-            // Highlight the selected thumbnail
             document.querySelectorAll(".ribbon-thumbnail").forEach(th => th.classList.remove("current"));
             img.classList.add("current");
 
-            // Hide the matrix if it's not the latest step
             const matrixContainer = document.getElementById("cluster-matrix");
             const nextStepBtn = document.getElementById("next-step-btn");
 
@@ -296,9 +300,33 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
             }
         });
 
-        ribbon.appendChild(img);
+        // Favorite icon
+        const fav = document.createElement("div");
+        fav.className = "favorite-icon";
+        fav.innerHTML = favoriteSteps.has(i) ? "❤️" : "🤍";
+
+        if (favoriteSteps.has(i)) fav.classList.add("filled");
+
+        fav.addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevent triggering thumbnail click
+
+            if (favoriteSteps.has(i)) {
+                favoriteSteps.delete(i);
+                fav.innerHTML = "🤍";
+                fav.classList.remove("filled");
+            } else {
+                favoriteSteps.add(i);
+                fav.innerHTML = "❤️";
+                fav.classList.add("filled");
+            }
+        });
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(fav);
+        ribbon.appendChild(wrapper);
     }
 }
+
 
 
     
