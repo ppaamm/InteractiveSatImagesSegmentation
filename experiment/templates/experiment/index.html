@@ -262,19 +262,44 @@ function check_matrix_validity () {
 
 /* ----------------- SEGMENTATION RIBBON ----------------- */
 
-function updateSegmentationRibbon(step, totalSteps, baseName) {
+function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     const ribbon = document.getElementById("segmentation-ribbon");
     ribbon.innerHTML = "";
     ribbon.style.display = "flex";
 
-    for (let i = 1; i <= step; i++) {
+    for (let i = 1; i <= totalSteps; i++) {
         const img = document.createElement("img");
         img.src = `/media/temp/${baseName}_step_${i}.png`;
         img.className = "ribbon-thumbnail";
-        if (i === step) img.classList.add("current");
+        if (i === currentStep) img.classList.add("current");
+
+        img.addEventListener("click", () => {
+            // Display selected segmentation
+            const overlay = document.getElementById("overlay-image");
+            overlay.src = `/media/temp/${baseName}_step_${i}.png`;
+            overlay.style.opacity = document.getElementById("toggle-segmentation").checked ? "{{ overlay_opacity }}" : "0";
+
+            // Highlight the selected thumbnail
+            document.querySelectorAll(".ribbon-thumbnail").forEach(th => th.classList.remove("current"));
+            img.classList.add("current");
+
+            // Hide the matrix if it's not the latest step
+            const matrixContainer = document.getElementById("cluster-matrix");
+            const nextStepBtn = document.getElementById("next-step-btn");
+
+            if (i !== currentStep) {
+                matrixContainer.style.display = "none";
+                nextStepBtn.style.display = "none";
+            } else {
+                matrixContainer.style.display = "block";
+                nextStepBtn.style.display = "block";
+            }
+        });
+
         ribbon.appendChild(img);
     }
 }
+
 
     
     

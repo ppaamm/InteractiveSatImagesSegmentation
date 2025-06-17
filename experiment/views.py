@@ -198,7 +198,7 @@ def next_step(request):
         'url': settings.MEDIA_URL + f'temp/{filename}',
         'num_clusters': len(unique_cluster_labels),
         'colors': [colors[label] for label in unique_cluster_labels],
-        'step': selector.current_step,  # Add this
+        'step': selector.current_step,  # <- Added
     })
 
     # return JsonResponse({
