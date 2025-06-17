@@ -13,6 +13,8 @@
     <div class="title-container">
         <div class = "title">Display a plot</div>
     </div>
+    
+    <div id="segmentation-ribbon" style="display: none;" class="segmentation-ribbon"></div>
 
     <div class="main-text" style="display: flex; gap: 30px; align-items: flex-start;">
         <!-- Left: visualization -->
@@ -256,6 +258,24 @@ function check_matrix_validity () {
     return valid;
 }
 
+
+
+/* ----------------- SEGMENTATION RIBBON ----------------- */
+
+function updateSegmentationRibbon(step, totalSteps, baseName) {
+    const ribbon = document.getElementById("segmentation-ribbon");
+    ribbon.innerHTML = "";
+    ribbon.style.display = "flex";
+
+    for (let i = 1; i <= step; i++) {
+        const img = document.createElement("img");
+        img.src = `/media/temp/${baseName}_step_${i}.png`;
+        img.className = "ribbon-thumbnail";
+        if (i === step) img.classList.add("current");
+        ribbon.appendChild(img);
+    }
+}
+
     
     
     
@@ -273,6 +293,8 @@ function check_matrix_validity () {
 
                     const numCols = currentColumnHeaders.length;
                     createMatrix(data.num_clusters, numCols, data.colors);
+                    
+                    updateSegmentationRibbon(data.step, data.step, imageParam);
                 } else {
                     alert("Failed to compute next step: " + data.message);
                 }
