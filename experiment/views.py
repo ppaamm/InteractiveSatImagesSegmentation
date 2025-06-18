@@ -4,7 +4,7 @@ from django.conf import settings
 from django.shortcuts import redirect
 import os
 import pickle
-from django.contrib.sessions.models import Session
+#from django.contrib.sessions.models import Session
 
 import numpy as np
 import random
@@ -77,7 +77,6 @@ def image_selection(request):
 def index(request):
     selected_img = request.GET.get('image', 'source-image')  # without extension
     image_url = settings.MEDIA_URL + f'satellite/{selected_img}.jpg'
-    #segmentation_url = settings.MEDIA_URL + f'satellite/{selected_img}.png'
     
     session_key = request.session.session_key or request.session.create()
     
@@ -152,21 +151,6 @@ def next_step(request):
     if session_key not in session_data:
         return JsonResponse({'status': 'error', 'message': 'Session not initialized. Please reload the page.'})
 
-
-    # # Check if session has state or image has changed
-    # current_image = request.session.get('current_image')
-    # if session_key not in session_data or current_image != selected_img:
-    #     try:
-    #         selector, M_segments = load_segmentation_from_path(selected_img)
-
-    #         session_data[session_key] = {
-    #             'selector': selector,
-    #             'M_segments': M_segments
-    #         }
-    #         request.session['current_image'] = selected_img  # Update the session image
-    #     except Exception as e:
-    #         return JsonResponse({'status': 'error', 'message': f'Failed to load segmentation: {e}'})
-
     # Get session state
     state = session_data[session_key]
     
@@ -202,19 +186,6 @@ def next_step(request):
         'step': selector.current_step,  # <- Added
     })
 
-    # return JsonResponse({
-    #     'status': 'ok',
-    #     'url': settings.MEDIA_URL + f'temp/{filename}',
-    #     'num_clusters': len(unique_cluster_labels),
-    #     'colors': [colors[label] for label in unique_cluster_labels],
-    # })
-
-
-    # return JsonResponse({
-    #     'status': 'ok',
-    #     'url': settings.MEDIA_URL + f'temp/{filename}',
-    #     'num_clusters': len(unique_cluster_labels)
-    # })
 
 
 
