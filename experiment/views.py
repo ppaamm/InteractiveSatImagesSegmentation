@@ -1,6 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.conf import settings
+from django.shortcuts import redirect
 import os
 import pickle
 from django.contrib.sessions.models import Session
@@ -214,3 +215,25 @@ def next_step(request):
     #     'url': settings.MEDIA_URL + f'temp/{filename}',
     #     'num_clusters': len(unique_cluster_labels)
     # })
+
+
+
+def summary(request):
+    segmentation_file = request.GET.get("segmentation")
+    if not segmentation_file:
+        return redirect("experiment:select")  # fallback to home if no image provided
+
+    segmentation_url = settings.MEDIA_URL + f'temp/{segmentation_file}'
+    #segmentation_url = settings.MEDIA_URL + f'satellite/{selected_img}.png'
+
+    selected_img = segmentation_file.split("_step")[0]
+    background_url = settings.MEDIA_URL + f'satellite/{selected_img}-600x400.jpg'
+    print(background_url, segmentation_url)
+    context = {
+        "segmentation_url": segmentation_url,
+        "background_url": background_url,
+        "overlay_opacity": OPACITY,
+    }
+
+    template = loader.get_template("experiment/summary.html")
+    return HttpResponse(template.render(context, request))

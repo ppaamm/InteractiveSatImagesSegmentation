@@ -51,6 +51,14 @@
             <button id="next-step-btn" style="display: none;">Next AI step</button>
         </div>
     </div>
+    
+    
+    <form action="{% url 'experiment:summary' %}" method="get">
+        <input type="hidden" name="segmentation" id="chosen-segmentation-input" value="">
+        <button type="submit">
+            Choose this segmentation
+        </button>
+    </form>
 </div>
 
 {% endblock %}
@@ -298,6 +306,8 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
                 matrixContainer.style.display = "block";
                 nextStepBtn.style.display = "block";
             }
+            
+            document.getElementById("chosen-segmentation-input").value = `${baseName}_step_${i}.png`;
         });
 
         // Favorite icon
@@ -348,6 +358,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
                     createMatrix(data.num_clusters, numCols, data.colors);
                     
                     updateSegmentationRibbon(data.step, data.step, imageParam);
+                    document.getElementById("chosen-segmentation-input").value = data.url.split("/").pop();
                 } else {
                     alert("Failed to compute next step: " + data.message);
                 }

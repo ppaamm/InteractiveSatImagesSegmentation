@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+      <link rel= "stylesheet" href="{% static 'experiment/style.css'%}">
+{% endblock %}
+
+{% block content %}
+<div class="box">
+    <div class="title-container">
+        <div class="title">Segmentation Summary</div>
+    </div>
+
+    <div class="main-text" style="text-align: center;">
+        <div class="image-section" >
+            <div class="image-overlay-container" style="text-align: center;">
+                <img src="{{ background_url }}" alt="Background" class="background-image">
+                <img src="{{ segmentation_url }}" id="overlay-image" style="opacity: {{ overlay_opacity }};">
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label>
+                <input type="checkbox" id="toggle-segmentation" checked>
+                Display segmentation
+            </label>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="{% url 'experiment:select' %}">
+                <button style="padding: 10px 20px; font-size: 16px;">Back to Home</button>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.getElementById("toggle-segmentation").addEventListener("change", function () {
+        const overlay = document.getElementById("overlay-image");
+        overlay.style.opacity = this.checked ? "{{ overlay_opacity }}" : "0";
+    });
+</script>
+{% endblock %}
