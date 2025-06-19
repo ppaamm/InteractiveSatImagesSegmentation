@@ -61,7 +61,7 @@ def image_selection(request):
     
     existing_images = { img_name : IMAGES[img_name]
                         for img_name in IMAGES 
-                        if os.path.isfile(settings.MEDIA_ROOT + f'/satellite/{IMAGES[img_name]}_data.pkl')}
+                        if os.path.isfile(settings.MEDIA_ROOT + f'/satellite/{IMAGES[img_name]}-600x400_data.pkl')}
     
     context = {'images': existing_images, 
                'MEDIA_URL': settings.MEDIA_URL, }
