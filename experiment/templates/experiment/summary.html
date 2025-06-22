@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="box">
-    <div class="title-container">
+    <div class="title-container" style="padding-bottom: 2rem;">
         <div class="title">Segmentation Summary</div>
     </div>
 
@@ -19,12 +19,21 @@
             </div>
         </div>
 
-        <div style="margin-top: 15px;">
+       <!--  <div style="margin-top: 15px;">
             <label>
                 <input type="checkbox" id="toggle-segmentation" checked>
                 Display segmentation
             </label>
+        </div> -->
+          <div style="margin-top: 15px;">
+                 <div class="toggle-row">
+          <label class="switch">
+            <input type="checkbox" id="toggle-segmentation" >
+            <span class="slider"></span>
+          </label>
+          <span>Display segmentation</span>
         </div>
+            </div>
 
         <div style="margin-top: 30px;">
             <a href="{% url 'experiment:select' %}">
