@@ -222,6 +222,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
         table.appendChild(tbody);
         container.appendChild(table);
+    }
+
+    function updateRowSum(row) {
+    const inputs = row.querySelectorAll("input");
+    let rowSum = 0;
+
+    inputs.forEach(input => {
+        const val = input.value.trim();
+        if (val !== "") {
+                rowSum += parseFloat(val);
+        }
+    });
+
+    const sumCell = row.querySelector(".row-sum-cell");
+    if (!sumCell) return;
 }
 
 
