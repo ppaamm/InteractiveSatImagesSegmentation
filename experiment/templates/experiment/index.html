@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     sumCell.textContent = rowSum.toFixed(2);
 
-    if (rowSum > 100) {
+    if (rowSum > 100 || rowSum < 100) {
         sumCell.style.backgroundColor = "red";
     } else {
         sumCell.style.backgroundColor = "lime";
@@ -291,7 +291,7 @@ function check_matrix_validity () {
             }
         });
 
-  if (rowSum > 100) {
+  if (rowSum > 100 || rowSum < 100) {
             hasError = true;            
             valid = false;
     }
