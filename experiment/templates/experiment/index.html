@@ -85,7 +85,7 @@
 
 {% block script %}
 <script>
-function getCSRFToken() {
+    function getCSRFToken() {
     const name = "csrftoken";
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -222,6 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 input.type = "number";
                 input.name = `cluster_${i}_col_${j}`;
                 input.style = 'margin: 2px 0; padding: 0.5rem 1rem; border-radius: 5px; border: 1px solid #ccc; max-width: 3rem;'
+                input.addEventListener("input", () => updateRowSum(row));
                 cell.appendChild(input);
                 row.appendChild(cell);                
             }
@@ -402,7 +403,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     
     
     function runNextStep () {
-      // Collect confusion matrix data
+        // Collect confusion matrix data
         const matrixData = [];
         const rows = document.querySelectorAll("#cluster-matrix tbody tr");
     
