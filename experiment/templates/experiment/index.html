@@ -239,6 +239,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!sumCell) return;
 
     sumCell.textContent = rowSum.toFixed(2);
+
+    if (rowSum > 100) {
+        sumCell.style.backgroundColor = "red";
+    } else {
+        sumCell.style.backgroundColor = "lime";
+    }
 }
 
 
