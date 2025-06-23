@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
             headerRow.appendChild(header);
         }
         thead.appendChild(headerRow);
-        table.appendChild(thead);
+        table.appendChild(thead); 
 
         const tbody = document.createElement("tbody");
         for (let i = 0; i < numClusters; i++) {
@@ -192,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
             clusterLabelContainer.style = 'display: flex; align-items: center;'
             const labelCell = document.createElement("td");
             const labelCellDot = document.createElement("div");
+            const sumCell = document.createElement("td");
           
             clusterLabelContainer.appendChild(labelCellDot);
             clusterLabelContainer.appendChild(labelCell); 
@@ -209,15 +210,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 input.name = `cluster_${i}_col_${j}`;
                 input.style = 'margin: 2px 0; padding: 0.5rem 1rem; border-radius: 5px; border: 1px solid #ccc; max-width: 3rem;'
                 cell.appendChild(input);
-                row.appendChild(cell);
+                row.appendChild(cell);                
             }
 
+            row.appendChild(sumCell); 
+            sumCell.className = "row-sum-cell";
+            sumCell.style = 'background-color: lime; width: 3rem; text-align: center;'; 
             tbody.appendChild(row);
         }
 
         table.appendChild(tbody);
         container.appendChild(table);
-    }
+}
 
 
     /* ----------------- CHECKS THE VALIDITY OF THE MATRIX ----------------- */
@@ -257,16 +261,16 @@ function check_matrix_validity () {
                     valid = false;
                 } else {
                     const parsed = parseFloat(val);
-                    rowSum += parsed;
+                    rowSum += parsed; 
                     columnSums[colIdx] += parsed;
                 }
             }
         });
 
-        if (rowSum > 100) {
-            hasError = true;
+  if (rowSum > 100) {
+            hasError = true;            
             valid = false;
-        }
+    }
 
         if (hasError) {
             const error = document.createElement("span");
