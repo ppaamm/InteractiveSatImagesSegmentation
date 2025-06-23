@@ -40,8 +40,9 @@
             </div>
              <form action="{% url 'experiment:summary' %}" method="get">
         <input type="hidden" name="segmentation" id="chosen-segmentation-input" value="">
-        <button type="submit" style=" margin: 1rem 0">
+        <button type="submit" id='choose-segmentation-btn' style="display: none; margin: 1rem 0">
             Choose this segmentation
+        Choose this segmentation
         </button>
     </form>
         </div>
@@ -485,6 +486,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
         currentColumnHeaders = Array.from(inputs).map(input => input.value || "Unnamed");
 
         document.getElementById("segment-inputs").style.display = "none";
+        document.getElementById("choose-segmentation-btn").style.display = "block";
         document.getElementById("next-step-btn").style.display = "block";
         checkbox.disabled = false;
         checkbox.checked = true;
