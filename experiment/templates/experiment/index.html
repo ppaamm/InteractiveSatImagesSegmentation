@@ -42,7 +42,6 @@
         <input type="hidden" name="segmentation" id="chosen-segmentation-input" value="">
         <button type="submit" id='choose-segmentation-btn' style="display: none; margin: 1rem 0">
             Choose this segmentation
-        Choose this segmentation
         </button>
     </form>
         </div>
@@ -201,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const tbody = document.createElement("tbody");
         for (let i = 0; i < numClusters; i++) {
             const row = document.createElement("tr");
-            row.style = "display: flex; margin: 1.5rem 0 1rem;";
+            row.style = "display: flex; margin: 1.5rem 0 1rem; align-items: center; gap: 0.5rem;";
             const clusterLabelContainer = document.createElement("td");
             clusterLabelContainer.style = 'display: flex; align-items: center;'
             const labelCell = document.createElement("td");
@@ -222,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const input = document.createElement("input");
                 input.type = "number";
                 input.name = `cluster_${i}_col_${j}`;
-                input.style = 'margin: 2px 0; padding: 0.5rem 1rem; border-radius: 5px; border: 1px solid #ccc; max-width: 3rem;'
+                input.style = 'padding: 0.5rem 1rem; border-radius: 5px; border: 1px solid #ccc; max-width: 3rem;'
                 input.addEventListener("input", () => updateRowSum(row));
                 cell.appendChild(input);
                 row.appendChild(cell);                
@@ -230,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             row.appendChild(sumCell); 
             sumCell.className = "row-sum-cell";
-            sumCell.style = 'background-color: lime; width: 3rem; text-align: center;'; 
+            sumCell.style = 'min-width: 3rem; text-align: center;'; 
             tbody.appendChild(row);
         }
 
@@ -255,11 +254,15 @@ document.addEventListener("DOMContentLoaded", function () {
     sumCell.textContent = rowSum.toFixed(2);
 
     if (rowSum > 100 || rowSum < 100) {
-        sumCell.style.backgroundColor = "red";
+        sumCell.style = "min-width: 3rem; text-align: center; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 700; background-color: crimson; color: white;" 
+        sumCell.textContent = `${rowSum}`;
     } else {
-        sumCell.style.backgroundColor = "lime";
+       sumCell.style = "min-width: 3rem; text-align: center; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 700; background-color: green; color: white;" 
+
+        sumCell.textContent = `${rowSum}`;
     }
 }
+
 
 
     /* ----------------- CHECKS THE VALIDITY OF THE MATRIX ----------------- */
@@ -311,11 +314,11 @@ function check_matrix_validity () {
     }
 
         if (hasError) {
-            const error = document.createElement("span");
+            const error = document.createElement("div");
             error.className = "row-error";
-            error.textContent = "Row sum must be 100";
-            error.style.color = "red";
-            error.style.marginLeft = "10px";
+            error.textContent = "⚠️ Row sum must be 100";
+            error.style = "10px";
+            error.style = "color: red; background-color: text-align: start;"
             row.appendChild(error);
         }
     });
@@ -391,7 +394,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
             document.getElementById("chosen-segmentation-input").value = `${baseName}_step_${i}.png`;
         });
 
-        // Favorite icon
+         // Favorite icon
         const fav = document.createElement("div");
         fav.className = "favorite-icon";
         fav.innerHTML = favoriteSteps.has(i) ? "&#9829" : "&#9829";
