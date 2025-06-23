@@ -85,6 +85,19 @@
 
 {% block script %}
 <script>
+function getCSRFToken() {
+    const name = "csrftoken";
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+            return decodeURIComponent(cookie.substring(name.length + 1));
+        }
+    }
+    return '';
+}
+
+
 let currentColumnHeaders = [];
 
 function updateValidateButtonState() {
@@ -385,8 +398,29 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     
     
     function runNextStep () {
+        // Collect confusion matrix data
+        const matrixData = [];
+        const rows = document.querySelectorAll("#cluster-matrix tbody tr");
+    
+        rows.forEach((row, i) => {
+            const rowData = [];
+            const inputs = row.querySelectorAll("input");
+            inputs.forEach((input, j) => {
+                const val = input.value.trim();
+                rowData.push(val === "" ? 0 : parseFloat(val));
+            });
+            matrixData.push(rowData);
+        });
+        console.log(matrixData);
 
-        fetch(`/experiment/next_step/?image=${imageParam}`)
+        fetch('/experiment/next_step/?image=${imageParam}', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ matrix: matrixData })
+    })
             .then(response => response.json())
             .then(data => {
                 if (data.status === "ok") {

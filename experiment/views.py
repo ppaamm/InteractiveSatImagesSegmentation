@@ -4,6 +4,8 @@ from django.conf import settings
 from django.shortcuts import redirect
 import os
 import pickle
+from django.views.decorators.csrf import csrf_exempt
+import json
 #from django.contrib.sessions.models import Session
 
 import numpy as np
@@ -144,6 +146,7 @@ def load_segmentation(request):
 
 
 
+@csrf_exempt
 def next_step(request):
     selected_img = request.GET.get('image', 'source-image')
     session_key = request.session.session_key or request.session.create()
@@ -158,6 +161,17 @@ def next_step(request):
     M_segments = state['M_segments']
 
     H, W = M_segments.shape
+    
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            matrix = np.array(data.get("matrix"))
+            print("Received matrix:", matrix)
+            print(type(matrix))
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid matrix data'})
+    
+    
     labels = selector.next_step()
 
     # Generate segmentation image
