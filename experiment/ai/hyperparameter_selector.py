@@ -10,7 +10,7 @@ class HyperparameterSelection:
         self.X_scaled = self.scaler.transform(X)
         self.current_step = 0
 
-    def next_step(self):
+    def next_step(self, confusion_matrix):
         """Perform one step of segmentation with increasing complexity."""
         self.current_step += 1
         n_clusters = 1 + self.current_step  # Just an example progression

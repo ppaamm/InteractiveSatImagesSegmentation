@@ -172,7 +172,7 @@ def next_step(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid matrix data'})
     
     
-    labels = selector.next_step()
+    labels = selector.next_step(matrix)
 
     # Generate segmentation image
     seg_image = np.zeros((H, W, 3), dtype=np.uint8)
