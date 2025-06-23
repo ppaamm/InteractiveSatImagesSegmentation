@@ -394,10 +394,10 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
             document.getElementById("chosen-segmentation-input").value = `${baseName}_step_${i}.png`;
         });
 
-         // Favorite icon
+        // Favorite icon
         const fav = document.createElement("div");
         fav.className = "favorite-icon";
-        fav.innerHTML = favoriteSteps.has(i) ? "&#9829" : "&#9829";
+        fav.innerHTML = favoriteSteps.has(i) ? "&#x2764" : "&#x2764";
 
         if (favoriteSteps.has(i)) fav.classList.add("filled");
 
@@ -406,11 +406,11 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
 
             if (favoriteSteps.has(i)) {
                 favoriteSteps.delete(i);
-                fav.innerHTML = "&#9829";
+                fav.innerHTML = "&#x2764";
                 fav.classList.remove("filled");
             } else {
                 favoriteSteps.add(i);
-                fav.innerHTML = "&#9829";
+                fav.innerHTML = "&#x2764";
                 fav.classList.add("filled");
             }
         });
