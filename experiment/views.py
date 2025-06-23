@@ -11,7 +11,7 @@ import json
 import numpy as np
 import random
 from PIL import Image
-from .ai.hyperparameter_selector import HyperparameterSelection
+from .ai.hyperparameter_selector import BasicKMeans
 
 
 OPACITY = 0.5
@@ -118,7 +118,7 @@ def load_segmentation_from_path(selected_img):
     X = data['data']
     M_segments = data['loaded_areas']
     
-    return HyperparameterSelection(X), M_segments
+    return BasicKMeans(X), M_segments
 
     
 
@@ -134,7 +134,7 @@ def load_segmentation(request):
 
         request.session['current_image'] = selected_img
         session_data[session_key] = {
-            'selector': HyperparameterSelection(X),
+            'selector': BasicKMeans(X),
             'M_segments': M_segments
         }
 
@@ -166,13 +166,12 @@ def next_step(request):
         try:
             data = json.loads(request.body)
             matrix = np.array(data.get("matrix"))
-            print("Received matrix:", matrix)
-            print(type(matrix))
+            #print("Received matrix:", matrix)
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid matrix data'})
     
     
-    labels = selector.next_step(matrix)
+    labels = selector.next_step(matrix / 100)
 
     # Generate segmentation image
     seg_image = np.zeros((H, W, 3), dtype=np.uint8)
