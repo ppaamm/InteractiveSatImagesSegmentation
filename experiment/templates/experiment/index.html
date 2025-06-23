@@ -237,6 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const sumCell = row.querySelector(".row-sum-cell");
     if (!sumCell) return;
+
+    sumCell.textContent = rowSum.toFixed(2);
 }
 
 
