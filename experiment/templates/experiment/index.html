@@ -85,7 +85,7 @@
 
 {% block script %}
 <script>
-            function getCSRFToken() {
+                function getCSRFToken() {
     const name = "csrftoken";
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     sumCell.textContent = rowSum.toFixed(2);
 
-    if (rowSum > 100) {
+    if (rowSum > 100 || rowSum < 100) {
         sumCell.style.backgroundColor = "red";
     } else {
         sumCell.style.backgroundColor = "lime";
@@ -304,7 +304,7 @@ function check_matrix_validity () {
             }
         });
 
-  if (rowSum > 100) {
+  if (rowSum > 100 || rowSum < 100) {
             hasError = true;            
             valid = false;
     }
@@ -426,7 +426,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     
     
     function runNextStep () {
-                              // Collect confusion matrix data
+         // Collect confusion matrix data
         const matrixData = [];
         const rows = document.querySelectorAll("#cluster-matrix tbody tr");
     
