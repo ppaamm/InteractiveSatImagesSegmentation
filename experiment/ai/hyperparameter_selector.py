@@ -14,6 +14,12 @@ def alignment_score(confusion_matrix):
         return 0
 
 
+
+###############################################################################
+###                             BASE SELECTION                              ###
+###############################################################################
+
+
 class HyperparameterSelection(ABC):
     
     def __init__(self, X):
@@ -35,6 +41,10 @@ class HyperparameterSelection(ABC):
         
         
         
+        
+###############################################################################
+###                                K MEANS                                  ###
+###############################################################################
         
 
 class BasicKMeans(HyperparameterSelection):
@@ -68,6 +78,60 @@ class KMeansOptimizer(HyperparameterSelection):
         kmeans = KMeans(n_clusters=self.current_K, random_state=42)
         return kmeans.fit_predict(self.X_scaled)
 
+
+
+def kmeans_mahalanobis(X, n_clusters, M_diag, random_state=42):
+    M = np.diag(M_diag)
+    X_transformed = X @ np.linalg.cholesky(M).T  # linear transformation
+    km = KMeans(n_clusters=n_clusters, random_state=random_state)
+    labels = km.fit_predict(X_transformed)
+    return labels
+
+
+class KMeansMahalanobisOptimizer(HyperparameterSelection):
+    def __init__(self, X, K_max=10, noise_variance=0.1):
+        super().__init__(X)
+        
+        print("Dataset:", X.shape)
+
+        self.d = self.X_scaled.shape[1]
+
+        K_values = np.arange(2, K_max + 1)
+        diag_values = [0.1, 1.0]  # example scale options for Mahalanobis diag
+        search_space = []
+
+        for K in K_values:
+            for diag in product(diag_values, repeat=self.d):
+                search_space.append((K,) + diag)
+
+        search_space = np.array(search_space)
+        print("Search space:", search_space.shape)
+
+        gp = optimization.GaussianProcess(optimization.squared_exponential_kernel, noise_variance)
+        self.bo = optimization.BasicBO(gp, optimization.ucb, search_space)
+        self.current_params = None
+
+    
+
+    def _optimize_parameter(self, alignment):
+        if self.current_step == 1:
+            self.current_params = self.bo.search_space[0]
+        else:
+            self.bo.update_observations(self.current_params, alignment)
+            self.current_params = self.bo.select_next()[0]
+    
+        K = int(self.current_params[0])
+        M_diag = np.array(self.current_params[1:])
+        print(f"K={K}, M_diag={M_diag}")
+    
+        return kmeans_mahalanobis(self.X_scaled, K, M_diag)
+
+
+
+
+###############################################################################
+###                                 DBSCAN                                  ###
+###############################################################################
 
 
 class DBSCANOptimizer(HyperparameterSelection):
