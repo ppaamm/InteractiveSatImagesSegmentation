@@ -40,7 +40,7 @@
             </div>
              <form action="{% url 'experiment:summary' %}" method="get">
         <input type="hidden" name="segmentation" id="chosen-segmentation-input" value="">
-        <button type="submit" style=" margin: 1rem 0">
+        <button type="submit" id='choose-segmentation-btn' style="display: none; margin: 1rem 0">
             Choose this segmentation
         </button>
     </form>
@@ -85,7 +85,7 @@
 
 {% block script %}
 <script>
-function getCSRFToken() {
+                function getCSRFToken() {
     const name = "csrftoken";
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -195,16 +195,17 @@ document.addEventListener("DOMContentLoaded", function () {
             headerRow.appendChild(header);
         }
         thead.appendChild(headerRow);
-        table.appendChild(thead);
+        table.appendChild(thead); 
 
         const tbody = document.createElement("tbody");
         for (let i = 0; i < numClusters; i++) {
             const row = document.createElement("tr");
-            row.style = "display: flex; margin: 1.5rem 0 1rem;";
+            row.style = "display: flex; margin: 1.5rem 0 1rem; align-items: center; gap: 0.5rem;";
             const clusterLabelContainer = document.createElement("td");
             clusterLabelContainer.style = 'display: flex; align-items: center;'
             const labelCell = document.createElement("td");
             const labelCellDot = document.createElement("div");
+            const sumCell = document.createElement("td");
           
             clusterLabelContainer.appendChild(labelCellDot);
             clusterLabelContainer.appendChild(labelCell); 
@@ -220,17 +221,48 @@ document.addEventListener("DOMContentLoaded", function () {
                 const input = document.createElement("input");
                 input.type = "number";
                 input.name = `cluster_${i}_col_${j}`;
-                input.style = 'margin: 2px 0; padding: 0.5rem 1rem; border-radius: 5px; border: 1px solid #ccc; max-width: 3rem;'
+                input.style = 'padding: 0.5rem 1rem; border-radius: 5px; border: 1px solid #ccc; max-width: 3rem;'
+                input.addEventListener("input", () => updateRowSum(row));
                 cell.appendChild(input);
-                row.appendChild(cell);
+                row.appendChild(cell);                
             }
 
+            row.appendChild(sumCell); 
+            sumCell.className = "row-sum-cell";
+            sumCell.style = 'min-width: 3rem; text-align: center;'; 
             tbody.appendChild(row);
         }
 
         table.appendChild(tbody);
         container.appendChild(table);
     }
+
+    function updateRowSum(row) {
+    const inputs = row.querySelectorAll("input");
+    let rowSum = 0;
+
+    inputs.forEach(input => {
+        const val = input.value.trim();
+        if (val !== "") {
+                rowSum += parseFloat(val);
+        }
+    });
+
+    const sumCell = row.querySelector(".row-sum-cell");
+    if (!sumCell) return;
+
+    sumCell.textContent = rowSum.toFixed(2);
+
+    if (rowSum > 100 || rowSum < 100) {
+        sumCell.style = "min-width: 3rem; text-align: center; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 700; background-color: crimson; color: white;" 
+        sumCell.textContent = `${rowSum}`;
+    } else {
+       sumCell.style = "min-width: 3rem; text-align: center; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 700; background-color: green; color: white;" 
+
+        sumCell.textContent = `${rowSum}`;
+    }
+}
+
 
 
     /* ----------------- CHECKS THE VALIDITY OF THE MATRIX ----------------- */
@@ -270,23 +302,23 @@ function check_matrix_validity () {
                     valid = false;
                 } else {
                     const parsed = parseFloat(val);
-                    rowSum += parsed;
+                    rowSum += parsed; 
                     columnSums[colIdx] += parsed;
                 }
             }
         });
 
-        if (rowSum > 100) {
-            hasError = true;
+  if (rowSum > 100 || rowSum < 100) {
+            hasError = true;            
             valid = false;
-        }
+    }
 
         if (hasError) {
-            const error = document.createElement("span");
+            const error = document.createElement("div");
             error.className = "row-error";
-            error.textContent = "Row sum must be 100";
-            error.style.color = "red";
-            error.style.marginLeft = "10px";
+            error.textContent = "⚠️ Row sum must be 100";
+            error.style = "10px";
+            error.style = "color: red; background-color: text-align: start;"
             row.appendChild(error);
         }
     });
@@ -365,7 +397,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
         // Favorite icon
         const fav = document.createElement("div");
         fav.className = "favorite-icon";
-        fav.innerHTML = favoriteSteps.has(i) ? "&#9829" : "&#9829";
+        fav.innerHTML = favoriteSteps.has(i) ? "&#x2764" : "&#x2764";
 
         if (favoriteSteps.has(i)) fav.classList.add("filled");
 
@@ -374,11 +406,11 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
 
             if (favoriteSteps.has(i)) {
                 favoriteSteps.delete(i);
-                fav.innerHTML = "&#9829";
+                fav.innerHTML = "&#x2764";
                 fav.classList.remove("filled");
             } else {
                 favoriteSteps.add(i);
-                fav.innerHTML = "&#9829";
+                fav.innerHTML = "&#x2764";
                 fav.classList.add("filled");
             }
         });
@@ -398,7 +430,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     
     
     function runNextStep () {
-        // Collect confusion matrix data
+         // Collect confusion matrix data
         const matrixData = [];
         const rows = document.querySelectorAll("#cluster-matrix tbody tr");
     
@@ -457,6 +489,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
         currentColumnHeaders = Array.from(inputs).map(input => input.value || "Unnamed");
 
         document.getElementById("segment-inputs").style.display = "none";
+        document.getElementById("choose-segmentation-btn").style.display = "block";
         document.getElementById("next-step-btn").style.display = "block";
         checkbox.disabled = false;
         checkbox.checked = true;
