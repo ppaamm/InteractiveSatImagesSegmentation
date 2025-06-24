@@ -445,7 +445,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
         });
         console.log(matrixData);
 
-        fetch('/experiment/next_step/?image=${imageParam}', {
+        fetch(`/experiment/next_step/?image=${imageParam}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
