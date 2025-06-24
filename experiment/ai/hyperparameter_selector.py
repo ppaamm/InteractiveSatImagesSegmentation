@@ -80,9 +80,62 @@ class KMeansOptimizer(HyperparameterSelection):
 
 
 
-def kmeans_mahalanobis(X, n_clusters, M_diag, random_state=42):
-    M = np.diag(M_diag)
-    X_transformed = X @ np.linalg.cholesky(M).T  # linear transformation
+# def kmeans_mahalanobis(X, n_clusters, M_diag, random_state=42):
+#     M = np.diag(M_diag)
+#     X_transformed = X @ np.linalg.cholesky(M).T  # linear transformation
+#     km = KMeans(n_clusters=n_clusters, random_state=random_state)
+#     labels = km.fit_predict(X_transformed)
+#     return labels
+
+
+# class KMeansMahalanobisOptimizer(HyperparameterSelection):
+#     def __init__(self, X, K_max=10, noise_variance=0.1):
+#         super().__init__(X)
+        
+#         print("Dataset:", X.shape)
+
+#         self.d = self.X_scaled.shape[1]
+
+#         K_values = np.arange(2, K_max + 1)
+#         diag_values = [0.1, 1.0]  # example scale options for Mahalanobis diag
+#         search_space = []
+
+#         for K in K_values:
+#             for diag in product(diag_values, repeat=self.d):
+#                 search_space.append((K,) + diag)
+
+#         search_space = np.array(search_space)
+#         print("Search space:", search_space.shape)
+
+#         gp = optimization.GaussianProcess(optimization.squared_exponential_kernel, noise_variance)
+#         self.bo = optimization.BasicBO(gp, optimization.ucb, search_space)
+#         self.current_params = None
+
+    
+
+#     def _optimize_parameter(self, alignment):
+#         if self.current_step == 1:
+#             self.current_params = self.bo.search_space[0]
+#         else:
+#             self.bo.update_observations(self.current_params, alignment)
+#             self.current_params = self.bo.select_next()[0]
+    
+#         K = int(self.current_params[0])
+#         M_diag = np.array(self.current_params[1:])
+#         print(f"K={K}, M_diag={M_diag}")
+    
+#         return kmeans_mahalanobis(self.X_scaled, K, M_diag)
+
+
+def kmeans_mahalanobis(X, n_clusters, group_diag, random_state=42):
+    # Construct full diagonal from grouped values
+    feature_groups = [3, 3, 2, X.shape[1] - 8]  # assuming X has at least 9 features
+    full_diag = np.concatenate([
+        np.full(size, scale) for scale, size in zip(group_diag, feature_groups)
+    ])
+    
+    M = np.diag(full_diag)
+    X_transformed = X @ np.linalg.cholesky(M).T
     km = KMeans(n_clusters=n_clusters, random_state=random_state)
     labels = km.fit_predict(X_transformed)
     return labels
@@ -91,17 +144,17 @@ def kmeans_mahalanobis(X, n_clusters, M_diag, random_state=42):
 class KMeansMahalanobisOptimizer(HyperparameterSelection):
     def __init__(self, X, K_max=10, noise_variance=0.1):
         super().__init__(X)
-        
-        print("Dataset:", X.shape)
 
+        print("Dataset:", X.shape)
         self.d = self.X_scaled.shape[1]
+        assert self.d >= 9, "This grouping assumes at least 9 features"
 
         K_values = np.arange(2, K_max + 1)
-        diag_values = [0.1, 1.0]  # example scale options for Mahalanobis diag
+        group_diag_values = [0.01, 0.2, 0.4, 0.6, 0.8, 1.0]  # small discrete grid
         search_space = []
 
         for K in K_values:
-            for diag in product(diag_values, repeat=self.d):
+            for diag in product(group_diag_values, repeat=4):  # only 4 parameters now
                 search_space.append((K,) + diag)
 
         search_space = np.array(search_space)
@@ -111,20 +164,22 @@ class KMeansMahalanobisOptimizer(HyperparameterSelection):
         self.bo = optimization.BasicBO(gp, optimization.ucb, search_space)
         self.current_params = None
 
-    
-
     def _optimize_parameter(self, alignment):
         if self.current_step == 1:
             self.current_params = self.bo.search_space[0]
         else:
             self.bo.update_observations(self.current_params, alignment)
             self.current_params = self.bo.select_next()[0]
-    
+
         K = int(self.current_params[0])
-        M_diag = np.array(self.current_params[1:])
-        print(f"K={K}, M_diag={M_diag}")
-    
-        return kmeans_mahalanobis(self.X_scaled, K, M_diag)
+        group_diag = np.array(self.current_params[1:])
+        print(f"K={K}, group_diag={group_diag}")
+
+        return kmeans_mahalanobis(self.X_scaled, K, group_diag)
+
+
+
+
 
 
 

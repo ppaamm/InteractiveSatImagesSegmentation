@@ -89,7 +89,7 @@ def index(request):
 
         # Force reinitialization of state every time index is called
         session_data[session_key] = {
-            'selector': SpectralClusteringOptimizer(X),
+            'selector': KMeansMahalanobisOptimizer(X),
             'M_segments': M_segments
         }
         request.session['current_image'] = selected_img
