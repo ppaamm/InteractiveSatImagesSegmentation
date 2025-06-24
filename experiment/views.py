@@ -83,12 +83,10 @@ def index(request):
     session_key = request.session.session_key or request.session.create()
     
     try:
-        selector, M_segments = load_segmentation_from_path(selected_img)
         X, M_segments = load_segmentation_from_path(selected_img)
 
         # Force reinitialization of state every time index is called
         session_data[session_key] = {
-            'selector': selector,
             'selector': BasicKMeans(X),
             'M_segments': M_segments
         }
@@ -120,7 +118,6 @@ def load_segmentation_from_path(selected_img):
     X = data['data']
     M_segments = data['loaded_areas']
     
-    return BasicKMeans(X), M_segments
     return X, M_segments
 
     
