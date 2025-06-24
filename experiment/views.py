@@ -12,7 +12,8 @@ import numpy as np
 import random
 from PIL import Image
 from .ai.hyperparameter_selector import KMeansOptimizer, KMeansMahalanobisOptimizer
-from .ai.hyperparameter_selector import SpectralClusteringOptimizer, DBSCANOptimizer
+from .ai.hyperparameter_selector import SpectralClusteringOptimizer, SpectralMahalanobisOptimizer
+from .ai.hyperparameter_selector import DBSCANOptimizer
 
 
 
@@ -89,7 +90,7 @@ def index(request):
 
         # Force reinitialization of state every time index is called
         session_data[session_key] = {
-            'selector': KMeansMahalanobisOptimizer(X),
+            'selector': SpectralMahalanobisOptimizer(X),
             'M_segments': M_segments
         }
         request.session['current_image'] = selected_img

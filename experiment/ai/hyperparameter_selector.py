@@ -127,15 +127,23 @@ class KMeansOptimizer(HyperparameterSelection):
 #         return kmeans_mahalanobis(self.X_scaled, K, M_diag)
 
 
-def kmeans_mahalanobis(X, n_clusters, group_diag, random_state=42):
-    # Construct full diagonal from grouped values
-    feature_groups = [3, 3, 2, X.shape[1] - 8]  # assuming X has at least 9 features
+
+
+def transform_with_mahalanobis(X, group_diag):
+    """
+    Apply a linear transformation based on a grouped diagonal Mahalanobis matrix.
+    """
+    feature_groups = [3, 3, 2, X.shape[1] - 8]
     full_diag = np.concatenate([
         np.full(size, scale) for scale, size in zip(group_diag, feature_groups)
     ])
-    
     M = np.diag(full_diag)
-    X_transformed = X @ np.linalg.cholesky(M).T
+    L = np.linalg.cholesky(M)
+    return X @ L.T
+
+
+def kmeans_mahalanobis(X, n_clusters, group_diag, random_state=42):
+    X_transformed = transform_with_mahalanobis(X, group_diag)
     km = KMeans(n_clusters=n_clusters, random_state=random_state)
     labels = km.fit_predict(X_transformed)
     return labels
@@ -272,3 +280,55 @@ class SpectralClusteringOptimizer(HyperparameterSelection):
             random_state=42
         )
         return clustering.fit_predict(self.X_scaled)
+
+
+class SpectralMahalanobisOptimizer(HyperparameterSelection):
+    def __init__(self, X, K_max=10, noise_variance=0.1):
+        super().__init__(X)
+
+        self.d = self.X_scaled.shape[1]
+        assert self.d >= 9, "Mahalanobis grouping expects at least 9 features."
+
+        # Search space grid values
+        K_values = np.arange(2, K_max + 1)
+        gamma_values = np.logspace(-1, 1, 5)         # [0.1, 0.316, 1, 3.16, 10]
+        group_diag_values = [0.1, 1.0]               # Values for each group in the Mahalanobis diagonal
+
+        # Build search space: (K, gamma, d1, d2, d3, d4)
+        search_space = []
+        for K in K_values:
+            for gamma in gamma_values:
+                for diag in product(group_diag_values, repeat=4):
+                    if all(v > 0 for v in diag):
+                        search_space.append((K, gamma) + diag)
+
+        search_space = np.array(search_space)
+
+        gp = optimization.GaussianProcess(optimization.squared_exponential_kernel, noise_variance)
+        self.bo = optimization.BasicBO(gp, optimization.ucb, search_space)
+        self.current_params = None
+
+    def _optimize_parameter(self, alignment):
+        if self.current_step == 1:
+            self.current_params = self.bo.search_space[0]
+        else:
+            self.bo.update_observations(self.current_params, alignment)
+            self.current_params = self.bo.select_next()[0]
+
+        K = int(self.current_params[0])
+        gamma = float(self.current_params[1])
+        group_diag = np.array(self.current_params[2:])
+
+        print(f"Step {self.current_step}: K={K}, gamma={gamma:.3f}, group_diag={group_diag}")
+
+        X_transformed = transform_with_mahalanobis(self.X_scaled, group_diag)
+
+        clustering = SpectralClustering(
+            n_clusters=K,
+            affinity='rbf',
+            gamma=gamma,
+            assign_labels='kmeans',
+            random_state=42
+        )
+
+        return clustering.fit_predict(X_transformed)
