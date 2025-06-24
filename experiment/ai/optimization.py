@@ -71,7 +71,7 @@ class GaussianProcess:
     
         # Efficiently compute only the diagonal of the covariance (variances)
         v = self.K_inv @ K_s  # shape (n_train, n_test)
-        K_ss_diag = np.array([self.kernel(x, x) for x in X_test])
+        K_ss_diag = np.array([self.kernel(x, x)[0,0] for x in X_test])
         var_s = K_ss_diag - np.sum(K_s * v, axis=0)  # element-wise dot product per test point
     
         return mu_s, var_s
@@ -110,11 +110,13 @@ class BasicBO:
         self.GP.fit(self.X_obs, self.y_obs)
     
     def select_next(self):
-        if self.X_obs is not None:
-            mask = ~np.any(np.all(self.search_space[:, None] == self.X_obs[None, :], axis=2), axis=1)
-            candidate_points = self.search_space[mask]
-        else:
-            candidate_points = self.search_space
+        # if self.X_obs is not None:
+        #     mask = ~np.any(np.all(self.search_space[:, None] == self.X_obs[None, :], axis=2), axis=1)
+        #     candidate_points = self.search_space[mask]
+        # else:
+        #     candidate_points = self.search_space
+    
+        candidate_points = self.search_space
     
         if candidate_points.shape[0] == 0:
             raise ValueError("All points in the search space have already been evaluated.")
@@ -126,7 +128,14 @@ class BasicBO:
             sigma = np.sqrt(np.diag(cov))
         else:
             sigma = np.sqrt(cov)
+            
+        print("Search space:", candidate_points.shape)
+        print("mu:", mu.shape)
+        print("sigma:", cov.shape)
 
         acq_values = self.acquisition_function(mu, sigma)
+        
+        print("Acquisition values:", acq_values.shape)
+        
         best_idx = np.argmax(acq_values)
         return candidate_points[best_idx], acq_values[best_idx]
