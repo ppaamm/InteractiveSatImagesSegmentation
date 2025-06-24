@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.cluster import KMeans, DBSCAN
+from sklearn.cluster import KMeans, DBSCAN, SpectralClustering
 from sklearn.preprocessing import StandardScaler
 from itertools import product
 from abc import ABC, abstractmethod
@@ -176,3 +176,44 @@ class DBSCANOptimizer(HyperparameterSelection):
             else:
                 print(f"Rejected params (too many clusters: {n_clusters}): eps={eps:.3f}, min_samples={int(min_samples)}")
 
+
+###############################################################################
+###                          Spectral clustering                            ###
+###############################################################################
+
+
+class SpectralClusteringOptimizer(HyperparameterSelection):
+    def __init__(self, X, K_max=10, gamma_values=None, noise_variance=0.1):
+        super().__init__(X)
+
+        if gamma_values is None:
+            # Log-spaced values from 0.1 to 10
+            gamma_values = np.logspace(-1, 1, 5)  # e.g., [0.1, 0.316, 1, 3.16, 10]
+
+        K_values = np.arange(2, K_max + 1)
+        search_space = np.array(list(product(K_values, gamma_values)))  # shape (n_combinations, 2)
+
+        gp = optimization.GaussianProcess(optimization.squared_exponential_kernel, noise_variance)
+        self.bo = optimization.BasicBO(gp, optimization.ucb, search_space)
+        self.current_params = None
+
+    def _optimize_parameter(self, alignment):
+        if self.current_step == 1:
+            self.current_params = self.bo.search_space[0]
+        else:
+            self.bo.update_observations(self.current_params, alignment)
+            self.current_params = self.bo.select_next()[0]
+
+        K = int(self.current_params[0])
+        gamma = float(self.current_params[1])
+
+        print(f"Spectral Clustering step {self.current_step}: K={K}, gamma={gamma:.3f}")
+
+        clustering = SpectralClustering(
+            n_clusters=K,
+            affinity='rbf',
+            gamma=gamma,
+            assign_labels='kmeans',
+            random_state=42
+        )
+        return clustering.fit_predict(self.X_scaled)
