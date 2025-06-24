@@ -445,6 +445,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     
     
     function runNextStep () {
+        nextStepBtn.disabled = true;
          // Collect confusion matrix data
         const matrixData = [];
         const rows = document.querySelectorAll("#cluster-matrix tbody tr");
@@ -470,6 +471,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     })
             .then(response => response.json())
             .then(data => {
+                nextStepBtn.disabled = false;
                 if (data.status === "ok") {
                     overlay.src = data.url;
                     overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
@@ -483,7 +485,10 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
                     alert("Failed to compute next step: " + data.message);
                 }
             })
-            .catch(err => console.error("Error:", err));
+            .catch(err => { 
+                console.error("Error:", err);
+                nextStepBtn.disabled = false;
+            });
     };
 
     
