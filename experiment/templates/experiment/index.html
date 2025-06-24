@@ -63,7 +63,10 @@
             </div>
 
             <div id="cluster-matrix" style="padding: 6rem 0 2rem; display: none; "></div>
-            <button id="next-step-btn" style="display: none;">Next AI step</button>
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <button id="next-step-btn" style="display: none;">Next AI step</button>
+                <div id="loading-spinner" class="spinner" style="display: none;"></div>
+            </div>
                  
         </div>
 
@@ -446,6 +449,9 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
     
     function runNextStep () {
         nextStepBtn.disabled = true;
+        const spinner = document.getElementById("loading-spinner");
+        spinner.style.display = "inline-block"; 
+        
          // Collect confusion matrix data
         const matrixData = [];
         const rows = document.querySelectorAll("#cluster-matrix tbody tr");
@@ -472,6 +478,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
             .then(response => response.json())
             .then(data => {
                 nextStepBtn.disabled = false;
+                spinner.style.display = "none";
                 if (data.status === "ok") {
                     overlay.src = data.url;
                     overlay.style.opacity = checkbox.checked ? "{{ overlay_opacity }}" : "0";
@@ -488,6 +495,7 @@ function updateSegmentationRibbon(currentStep, totalSteps, baseName) {
             .catch(err => { 
                 console.error("Error:", err);
                 nextStepBtn.disabled = false;
+                spinner.style.display = "none";
             });
     };
 
