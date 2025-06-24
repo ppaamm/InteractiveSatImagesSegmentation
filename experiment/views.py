@@ -11,7 +11,7 @@ import json
 import numpy as np
 import random
 from PIL import Image
-from .ai.hyperparameter_selector import KMeansOptimizer, BasicKMeans
+from .ai.hyperparameter_selector import KMeansOptimizer, BasicKMeans, DBSCANOptimizer
 
 
 OPACITY = 0.5
@@ -87,7 +87,7 @@ def index(request):
 
         # Force reinitialization of state every time index is called
         session_data[session_key] = {
-            'selector': KMeansOptimizer(X),
+            'selector': DBSCANOptimizer(X),
             'M_segments': M_segments
         }
         request.session['current_image'] = selected_img

@@ -100,7 +100,6 @@ class BasicBO:
         if self.X_obs is not None:
             mask = ~np.any(np.all(self.search_space[:, None] == self.X_obs[None, :], axis=2), axis=1)
             candidate_points = self.search_space[mask]
-            print(candidate_points)
         else:
             candidate_points = self.search_space
     
