@@ -84,10 +84,12 @@ def index(request):
     
     try:
         selector, M_segments = load_segmentation_from_path(selected_img)
+        X, M_segments = load_segmentation_from_path(selected_img)
 
         # Force reinitialization of state every time index is called
         session_data[session_key] = {
             'selector': selector,
+            'selector': BasicKMeans(X),
             'M_segments': M_segments
         }
         request.session['current_image'] = selected_img
@@ -119,28 +121,30 @@ def load_segmentation_from_path(selected_img):
     M_segments = data['loaded_areas']
     
     return BasicKMeans(X), M_segments
+    return X, M_segments
 
     
 
     
-def load_segmentation(request):
-    selected_img = request.GET.get('image', 'source-image')
-    session_key = request.session.session_key or request.session.create()
+# def load_segmentation(request):
+#     print("Running load_segmentation")
+#     selected_img = request.GET.get('image', 'source-image')
+#     session_key = request.session.session_key or request.session.create()
     
-    segmentation_data_path = os.path.join(settings.MEDIA_ROOT, f'satellite/{selected_img}-600x400_data.pkl')
+#     segmentation_data_path = os.path.join(settings.MEDIA_ROOT, f'satellite/{selected_img}-600x400_data.pkl')
 
-    try:
-        X, M_segments = load_segmentation_from_path(segmentation_data_path)
+#     try:
+#         X, M_segments = load_segmentation_from_path(segmentation_data_path)
 
-        request.session['current_image'] = selected_img
-        session_data[session_key] = {
-            'selector': BasicKMeans(X),
-            'M_segments': M_segments
-        }
+#         request.session['current_image'] = selected_img
+#         session_data[session_key] = {
+#             'selector': KMeansOptimizer(X),
+#             'M_segments': M_segments
+#         }
 
-        return JsonResponse({'status': 'ok'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)})
+#         return JsonResponse({'status': 'ok'})
+#     except Exception as e:
+#         return JsonResponse({'status': 'error', 'message': str(e)})
     
     
 
