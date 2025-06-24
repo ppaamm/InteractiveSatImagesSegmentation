@@ -107,4 +107,4 @@ class BasicBO:
 
         acq_values = self.acquisition_function(mu, sigma)
         best_idx = np.argmax(acq_values)
-        return self.search_space[best_idx]
+        return self.search_space[best_idx], acq_values[best_idx]
