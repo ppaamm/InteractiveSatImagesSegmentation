@@ -56,13 +56,26 @@ class GaussianProcess:
         self.K_inv = np.linalg.inv(K)
         
         
-    def predict(self, X_test):
+    def predict_full(self, X_test):
         K_s = self.kernel(self.X_train, X_test)
         K_ss = self.kernel(X_test, X_test)
         
         mu_s = K_s.T @ self.K_inv @ self.y_train  
         cov_s = K_ss - K_s.T @ self.K_inv @ K_s 
         return mu_s, cov_s
+    
+    def predict(self, X_test):
+        K_s = self.kernel(self.X_train, X_test)  # shape (n_train, n_test)
+        mu_s = K_s.T @ self.K_inv @ self.y_train
+        mu_s = mu_s.ravel()
+    
+        # Efficiently compute only the diagonal of the covariance (variances)
+        v = self.K_inv @ K_s  # shape (n_train, n_test)
+        K_ss_diag = np.array([self.kernel(x, x) for x in X_test])
+        var_s = K_ss_diag - np.sum(K_s * v, axis=0)  # element-wise dot product per test point
+    
+        return mu_s, var_s
+
 
 
 
