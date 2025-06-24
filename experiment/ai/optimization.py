@@ -97,8 +97,17 @@ class BasicBO:
         self.GP.fit(self.X_obs, self.y_obs)
     
     def select_next(self):
-        mu, cov = self.GP.predict(self.search_space)
-        print(mu.shape, cov.shape)
+        if self.X_obs is not None:
+            mask = ~np.any(np.all(self.search_space[:, None] == self.X_obs[None, :], axis=2), axis=1)
+            candidate_points = self.search_space[mask]
+        else:
+            candidate_points = self.search_space
+    
+        if candidate_points.shape[0] == 0:
+            raise ValueError("All points in the search space have already been evaluated.")
+    
+        # Predict using GP
+        mu, cov = self.GP.predict(candidate_points)
         
         if cov.ndim == 2:
             sigma = np.sqrt(np.diag(cov))
