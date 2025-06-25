@@ -297,7 +297,8 @@ class SpectralClusteringOptimizer(HyperparameterSelection):
 
         if gamma_values is None:
             # Log-spaced values from 0.1 to 10
-            gamma_values = np.logspace(-1, 1, 5)  # e.g., [0.1, 0.316, 1, 3.16, 10]
+            #gamma_values = np.logspace(-5, 1, 5)  # e.g., [0.1, 0.316, 1, 3.16, 10]
+            gamma_values = [5, 10, 20, 50]
 
         K_values = np.arange(2, K_max + 1)
         search_space = np.array(list(product(K_values, gamma_values)))  # shape (n_combinations, 2)
@@ -318,10 +319,18 @@ class SpectralClusteringOptimizer(HyperparameterSelection):
 
         print(f"Spectral Clustering step {self.current_step}: K={K}, gamma={gamma:.3f}")
 
+        # clustering = SpectralClustering(
+        #     n_clusters=K,
+        #     affinity='rbf',
+        #     gamma=gamma,
+        #     assign_labels='kmeans',
+        #     random_state=42
+        # )
+        
         clustering = SpectralClustering(
             n_clusters=K,
-            affinity='rbf',
-            gamma=gamma,
+            affinity='nearest_neighbors',
+            n_neighbors=gamma,  # try 5–20 depending on dataset size
             assign_labels='kmeans',
             random_state=42
         )
@@ -337,8 +346,8 @@ class SpectralMahalanobisOptimizer(HyperparameterSelection):
 
         # Search space grid values
         K_values = np.arange(2, K_max + 1)
-        gamma_values = np.logspace(-1, 1, 5)         # [0.1, 0.316, 1, 3.16, 10]
-        group_diag_values = [0.1, 1.0]               # Values for each group in the Mahalanobis diagonal
+        gamma_values = np.logspace(-6, -1, 5)         # [0.1, 0.316, 1, 3.16, 10]
+        group_diag_values = [0.01, 0.5, 1.0]               # Values for each group in the Mahalanobis diagonal
 
         # Build search space: (K, gamma, d1, d2, d3, d4)
         search_space = []
