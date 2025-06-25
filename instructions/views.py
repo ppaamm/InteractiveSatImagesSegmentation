@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.template.loader import render_to_string
 
-TOTAL_STEPS = 3
+TOTAL_STEPS = 7 
 
 
 def index(request):
