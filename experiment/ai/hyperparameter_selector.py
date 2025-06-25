@@ -4,6 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from itertools import product
 from abc import ABC, abstractmethod
 from . import optimization
+from sklearn.metrics import adjusted_rand_score
+from scipy.optimize import linear_sum_assignment
+from sklearn.metrics import confusion_matrix
 
 
 def alignment_score(confusion_matrix):
@@ -19,25 +22,68 @@ def alignment_score(confusion_matrix):
 ###                             BASE SELECTION                              ###
 ###############################################################################
 
+def label_difference(y1, y2):
+    cm = confusion_matrix(y1, y2)
+    row_ind, col_ind = linear_sum_assignment(-cm)  # maximize matching
+    matched = cm[row_ind, col_ind].sum()
+    total = len(y1)
+    diff_ratio = 1 - matched / total
+    return diff_ratio
+
 
 class HyperparameterSelection(ABC):
     
-    def __init__(self, X):
+    def __init__(self, X, max_n_attempt=5):
         self.X = X
         self.scaler = StandardScaler().fit(X)
         self.X_scaled = self.scaler.transform(X)
         self.current_step = 0
+        self.max_n_attempt = 5
+        self.history = []
             
     @abstractmethod
     def _optimize_parameter(self, alignment):
         pass
     
+    
+    def _already_found_clustering(self, labels):
+        print("Entering already found clustering function")
+        for previous_step in self.history:
+            old_labels = previous_step['labels']
+            difference = label_difference(labels, old_labels)
+            print("Difference:", difference)
+            if difference == 0:
+                print("Already found" )
+                return True, previous_step['confusion_matrix']
         
-    def next_step(self, confusion_matrix):
+        return False, None
+    
+    def next_step(self, confusion_matrix, n_attempt=0):
         """Perform one step of segmentation with increasing complexity."""
+        
+        print("===============  Entering next step ===============")
+        print("History:", len(self.history))
+        
+        if n_attempt == 0 and self.history:
+            print("Adds the previous confusion matrix")
+            self.history[-1]['confusion_matrix'] = confusion_matrix
+        
+        
         self.current_step += 1
         alignment = alignment_score(confusion_matrix)
-        return self._optimize_parameter(alignment)
+        print("Alignment score:", alignment)
+        
+        predicted_labels = self._optimize_parameter(alignment)
+        print("Predicted new labels")
+        
+        already_found, found_matrix = self._already_found_clustering(predicted_labels)
+        
+        if already_found and n_attempt < self.max_n_attempt:
+            self.current_step -= 1
+            return self.next_step(found_matrix, n_attempt+1)
+        
+        self.history.append({'labels': predicted_labels})
+        return predicted_labels
         
         
         
