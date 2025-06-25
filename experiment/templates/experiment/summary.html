@@ -3,12 +3,13 @@
 {% endblock %} {% block content %}
 <div class="box">
   <div class="title-container" style="padding-bottom: 2rem">
-    <div class="title">Segmentation Summary</div>
+    <div class="title">Here is your final segmentation!</div>
   </div>
 
-  <div class="main-text" style="text-align: center">
-    <div class="image-section">
-      <div class="image-overlay-container" style="text-align: center">
+  <div class="main-text" style="display: flex; text-align: center; justify-content: center;">
+    <div class="image-section" style="display: flex; align-items: center; justify-content: center; gap: 2rem;">
+      <div class="image-overlay-container" style="text-align: center;">
+
         <img
           src="{{ background_url }}"
           alt="Background"
@@ -21,6 +22,7 @@
         />
       </div>
     </div>
+    </div>
 
     <!--  <div style="margin-top: 15px;">
             <label>
@@ -28,7 +30,7 @@
                 Display segmentation
             </label>
         </div> -->
-    <div style="margin-top: 15px">
+    <div style="margin-top: 15px; align-self: center">
       <div class="toggle-row">
         <label class="switch">
           <input type="checkbox" id="toggle-segmentation" />
@@ -39,7 +41,7 @@
     </div>
 
     <div style="margin-top: 30px">
-      <a href="{% url 'experiment:select' %}">
+      <a href="{% url 'home:index' %}">
         <button style="padding: 10px 20px; font-size: 16px">
           Back to Home
         </button>
